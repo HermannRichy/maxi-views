@@ -1,24 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
+const kingred = localFont({
+    src: "./fonts/kingred.otf",
+    variable: "--font-kingred",
+    display: "swap",
 });
 
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
+const satoshi = localFont({
+    src: "./fonts/satoshi.otf",
+    variable: "--font-satoshi",
+    display: "swap",
 });
 
 export const metadata: Metadata = {
-    title: "Start Web App - Premium Starter",
+    title: "Maxi Views",
     description:
-        "A high-performance fullstack starter template with Next.js 16, Clerk, and Prisma.",
+        "Achetez des followers, likes et vues pour vos réseaux sociaux",
 };
 
 export default function RootLayout({
@@ -30,7 +32,7 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="fr" suppressHydrationWarning>
                 <body
-                    className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                    className={`${kingred.variable} ${satoshi.variable} antialiased font-sans`}
                 >
                     <ThemeProvider
                         attribute="class"
