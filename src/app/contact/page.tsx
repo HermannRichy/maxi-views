@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import emailjs from "@emailjs/browser";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +30,7 @@ const CONTACT_INFO = [
     {
         Icon: Mail,
         title: "Email",
-        value: "support@maxiviews.com",
+        value: "support@maxiviews.me",
         desc: "Réponse sous 24h",
     },
     {
@@ -49,16 +51,29 @@ const CONTACT_INFO = [
    Contact Form
 ───────────────────────────────────────────────────────────────── */
 function ContactForm() {
+    const formRef = useRef<HTMLFormElement>(null);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!formRef.current) return;
         setLoading(true);
-        // Simulate sending (replace with EmailJS or API call)
-        await new Promise((r) => setTimeout(r, 1200));
-        toast.success("Message envoyé ! Nous vous répondons sous 24h.");
-        (e.target as HTMLFormElement).reset();
-        setLoading(false);
+
+        try {
+            await emailjs.sendForm(
+                process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+                formRef.current,
+                process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
+            );
+            toast.success("Message envoyé ! Nous vous répondons sous 24h.");
+            formRef.current.reset();
+        } catch (error) {
+            console.error("EmailJS Error:", error);
+            toast.error("Échec de l'envoi. Veuillez réessayer.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -106,26 +121,30 @@ function ContactForm() {
                     </h3>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form
+                    ref={formRef}
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
+                >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="name" className="text-sm">
+                            <Label htmlFor="user_name" className="text-sm">
                                 Nom complet
                             </Label>
                             <Input
-                                id="name"
-                                name="name"
+                                id="user_name"
+                                name="user_name"
                                 placeholder="Jean Dupont"
                                 required
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="email" className="text-sm">
+                            <Label htmlFor="user_email" className="text-sm">
                                 Email
                             </Label>
                             <Input
-                                id="email"
-                                name="email"
+                                id="user_email"
+                                name="user_email"
                                 type="email"
                                 placeholder="jean@exemple.com"
                                 required
@@ -134,12 +153,12 @@ function ContactForm() {
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="subject" className="text-sm">
+                        <Label htmlFor="user_subject" className="text-sm">
                             Sujet
                         </Label>
                         <Input
-                            id="subject"
-                            name="subject"
+                            id="user_subject"
+                            name="user_subject"
                             placeholder="En quoi peut-on vous aider ?"
                             required
                         />
@@ -218,6 +237,17 @@ export default function ContactPage() {
             </div>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Back link */}
+                <div className="mb-10">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+                    >
+                        <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                        Retour à l&apos;accueil
+                    </Link>
+                </div>
+
                 <SectionTitle subtitle="Notre équipe est disponible 24h/7j pour répondre à vos questions.">
                     Contactez-<span className="text-primary">nous</span>
                 </SectionTitle>
