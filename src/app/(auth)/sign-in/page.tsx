@@ -32,7 +32,7 @@ export default function LoginPage() {
     // Redirect if user is already signed in
     useEffect(() => {
         if (userLoaded && isSignedIn) {
-            router.push("/dashboard/profile");
+            router.push("/dashboard");
         }
     }, [userLoaded, isSignedIn, router]);
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
 
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
-                router.push("/dashboard/profile");
+                router.push("/dashboard");
                 toast.success("Bon retour !");
             } else {
                 console.error(result);
@@ -77,11 +77,14 @@ export default function LoginPage() {
         setIsSocialLoading(strategy === "oauth_google" ? "google" : "apple");
         setError(null);
 
+        const baseUrl =
+            process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+
         try {
             await signIn.authenticateWithRedirect({
                 strategy,
-                redirectUrl: "/sso-callback",
-                redirectUrlComplete: "/dashboard/profile",
+                redirectUrl: `${baseUrl}/sso-callback`,
+                redirectUrlComplete: "/dashboard",
             });
         } catch (err: any) {
             const errorMessage =
@@ -112,16 +115,6 @@ export default function LoginPage() {
             <div className="relative z-10 w-full max-w-md mx-auto">
                 <div className="bg-white/5 dark:bg-slate-950/40 backdrop-blur-xl backdrop-saturate-150 border border-white/10 dark:border-slate-800/30 rounded-3xl p-8 sm:p-10 shadow-2xl">
                     <div className="text-center mb-8">
-                        <Link
-                            href="/"
-                            className="flex items-center justify-center mb-6 group"
-                        >
-                            <div className="relative w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-primary/20 transition-transform group-hover:scale-110">
-                                <span className="text-2xl font-bold text-primary">
-                                    S
-                                </span>
-                            </div>
-                        </Link>
                         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                             Connexion
                         </h1>
