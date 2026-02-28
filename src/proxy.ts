@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
     "/contact",
     "/cgu",
     "/privacy",
+    "/api/wallet/callback", // webhook FeexPay (pas d'auth Clerk)
 ]);
 export default clerkMiddleware(async (auth, request) => {
     if (!isPublicRoute(request)) {

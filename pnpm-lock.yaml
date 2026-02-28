@@ -14,6 +14,9 @@ importers:
       '@emailjs/browser':
         specifier: ^4.4.1
         version: 4.4.1
+      '@feexpay/react-sdk':
+        specifier: ^1.5.8
+        version: 1.5.8(lucide-react@0.574.0(react@19.2.3))
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.2(react@19.2.3))
@@ -625,6 +628,11 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@feexpay/react-sdk@1.5.8':
+    resolution: {integrity: sha512-tLCX/qgq8PqKdpyAgB1iaZILsl/Z88EsetvGwLEp60OHCbXjqtEtRbWyor3v10OVZqiLpRr1E7XPmV6TgB7qjg==}
+    peerDependencies:
+      lucide-react: ^0.417.0
 
   '@floating-ui/core@1.7.4':
     resolution: {integrity: sha512-C3HlIdsBxszvm5McXlB8PeOEWfBhcGBTZGkGlWc2U0KFY5IwG5OQEuQ8rq52DZmcHDlPLd+YFBK+cZcytwIFWg==}
@@ -5229,6 +5237,12 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@feexpay/react-sdk@1.5.8(lucide-react@0.574.0(react@19.2.3))':
+    dependencies:
+      lucide-react: 0.574.0(react@19.2.3)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
 
   '@floating-ui/core@1.7.4':
     dependencies:

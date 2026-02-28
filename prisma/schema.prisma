@@ -6,16 +6,80 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Enums ──────────────────────────────────────────────────────────
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ─── Models ─────────────────────────────────────────────────────────
 model User {
-  id            String    @id @default(cuid())
-  clerkId       String    @unique
-  email         String    @unique
-  name          String?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String        @id @default(cuid())
+  clerkId      String        @unique
+  email        String        @unique
+  name         String?
+  image        String?
+  role         Role          @default(USER)
+  balance      Int           @default(0) // FCFA
+  orders       Order[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@index([clerkId])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  network     String
+  serviceName String
+  serviceId   String?     // ID JAP du service (optionnel)
+  link        String      // URL / username du compte cible
+  quantity    Int
+  amount      Int         // Montant débité en FCFA
+  status      OrderStatus @default(PENDING)
+  japOrderId  String?     // ID commande sur JAP (saisi par admin)
+  adminNote   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Transaction {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  amount    Int               // FCFA
+  type      TransactionType
+  status    TransactionStatus @default(PENDING)
+  reference String            @unique // Ref FeexPay ou interne
+  orderId   String?           // Lien optionnel à une commande (DEBIT)
+  createdAt DateTime          @default(now())
+
+  @@index([userId])
 }
 
 model ContactMessage {
