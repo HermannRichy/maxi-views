@@ -1,4 +1,8 @@
-import { Card } from "@/components/ui/card";
+import {
+    FuturisticCard,
+    SectionTitle,
+    SectionBorder,
+} from "@/components/ui/futuristic";
 import { Star } from "lucide-react";
 import { TESTIMONIALS } from "@/data/landing";
 
@@ -6,20 +10,20 @@ export default function TestimonialsSection() {
     return (
         <section className="py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
-                    <h2 className="font-display text-4xl sm:text-5xl font-black mb-4">
-                        Ce que disent{" "}
-                        <span className="text-primary">nos clients</span>
-                    </h2>
-                </div>
+                <SectionTitle>
+                    Ce que disent{" "}
+                    <span className="text-primary">nos clients</span>
+                </SectionTitle>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {TESTIMONIALS.map((t) => (
-                        <Card
+                        <FuturisticCard
                             key={t.name}
-                            className="border-border bg-card p-6 relative overflow-hidden"
+                            className="p-6 relative overflow-visible"
                         >
+                            {/* Top accent line */}
                             <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />
+
                             <div className="flex mb-4">
                                 {Array.from({ length: t.stars }).map((_, i) => (
                                     <Star
@@ -28,11 +32,20 @@ export default function TestimonialsSection() {
                                     />
                                 ))}
                             </div>
-                            <p className="text-sm text-muted-foreground mb-6 italic">
+
+                            <p className="text-sm text-muted-foreground mb-6 italic leading-relaxed">
                                 &ldquo;{t.text}&rdquo;
                             </p>
+
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
+                                {/* Avatar — chamfered */}
+                                <div
+                                    className="w-10 h-10 bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0"
+                                    style={{
+                                        clipPath:
+                                            "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)",
+                                    }}
+                                >
                                     {t.name[0]}
                                 </div>
                                 <div>
@@ -44,10 +57,11 @@ export default function TestimonialsSection() {
                                     </p>
                                 </div>
                             </div>
-                        </Card>
+                        </FuturisticCard>
                     ))}
                 </div>
             </div>
+            <SectionBorder className="mt-24" />
         </section>
     );
 }

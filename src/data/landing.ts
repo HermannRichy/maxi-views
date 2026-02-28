@@ -14,6 +14,10 @@ import {
     TrendingUp,
     BarChart3,
     Globe,
+    UserPlus,
+    Wallet,
+    MousePointerClick,
+    Rocket,
 } from "lucide-react";
 
 export const NETWORKS = [
@@ -132,10 +136,10 @@ export const FEATURED_SERVICES = [
 ];
 
 export const STATS = [
-    { value: "50K+", label: "Commandes livrées" },
-    { value: "10K+", label: "Clients satisfaits" },
-    { value: "7", label: "Réseaux supportés" },
-    { value: "99%", label: "Taux de satisfaction" },
+    { count: 50, suffix: "K+", label: "Commandes livrées" },
+    { count: 10, suffix: "K+", label: "Clients satisfaits" },
+    { count: 7, suffix: "", label: "Réseaux supportés" },
+    { count: 99, suffix: "%", label: "Taux de satisfaction" },
 ];
 
 export const WHY_US = [
@@ -226,22 +230,22 @@ export const HOW_IT_WORKS = [
     {
         title: "Créez votre compte",
         desc: "Inscrivez-vous gratuitement en quelques secondes avec votre email.",
-        icon: "👤",
+        Icon: UserPlus,
     },
     {
         title: "Rechargez votre solde",
         desc: "Ajoutez des fonds via Mobile Money ou carte bancaire.",
-        icon: "💳",
+        Icon: Wallet,
     },
     {
         title: "Choisissez un service",
         desc: "Sélectionnez le réseau et le service qui vous correspond.",
-        icon: "🎯",
+        Icon: MousePointerClick,
     },
     {
         title: "Profitez des résultats",
         desc: "Votre commande commence immédiatement. Suivez-la en temps réel.",
-        icon: "🚀",
+        Icon: Rocket,
     },
 ];
 
