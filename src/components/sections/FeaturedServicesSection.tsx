@@ -52,11 +52,14 @@ export default function FeaturedServicesSection() {
 
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-2xl font-black text-primary">
-                                        ${s.price}
+                                    <p className="text-2xl font-black text-primary tabular-nums">
+                                        {s.price.toLocaleString("fr-FR")}
+                                        <span className="text-sm font-semibold ml-1">
+                                            FCFA
+                                        </span>
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                        par {s.unit}
+                                        pour {s.unit}
                                     </p>
                                 </div>
                                 {/* Chamfered CTA */}
