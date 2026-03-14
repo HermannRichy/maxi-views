@@ -74,21 +74,6 @@ export default async function DashboardLayout({
                             {item.label}
                         </Link>
                     ))}
-
-                    {/* Admin link */}
-                    {user.role === "ADMIN" && (
-                        <>
-                            <div className="h-px bg-border/50 my-2" />
-                            <Link
-                                href="/admin"
-                                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary hover:bg-primary/5 transition-colors"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            >
-                                <ShieldCheck className="w-4 h-4" />
-                                Panel Admin
-                            </Link>
-                        </>
-                    )}
                 </nav>
 
                 {/* Footer */}
@@ -126,10 +111,12 @@ export default async function DashboardLayout({
                 </div>
 
                 {/* Page content */}
-                <main className="flex-1 p-6 overflow-auto">{children}</main>
+                <main className="flex-1 p-6 pb-24 md:pb-6 overflow-auto">
+                    {children}
+                </main>
 
                 {/* Mobile bottom nav */}
-                <nav className="md:hidden flex border-t border-border/50 bg-card">
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-border/50 bg-card/90 backdrop-blur-lg">
                     {NAV_ITEMS.map((item) => (
                         <Link
                             key={item.href}
