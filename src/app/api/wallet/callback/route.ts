@@ -1,33 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { sendDepositConfirmed } from "@/lib/emails";
 
 /* ─────────────────────────────────────────────────────────────────
    GET|POST /api/wallet/callback
-   Webhook FeexPay : crédite le solde utilisateur sur paiement réussi.
+   Webhook FedaPay : crédite le solde utilisateur sur paiement réussi.
    Cette route est PUBLIQUE (pas de auth Clerk).
 ───────────────────────────────────────────────────────────────── */
 async function handleCallback(req: NextRequest) {
     try {
-        // FeexPay peut envoyer en GET (query params) ou POST (json/form)
         let reference: string | null = null;
         let status: string | null = null;
 
         if (req.method === "GET") {
-            reference = req.nextUrl.searchParams.get("custom_id");
-            status = req.nextUrl.searchParams.get("status");
+            // Callback browser redirect depuis FedaPay: ?status=approved&id=...
+            // Note: Le FedaPay redirect ne contient pas le custom_metadata, on dépendra plutôt du webhook POST pour la validation serveur.
+            return NextResponse.redirect(
+                `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet`,
+            );
         } else {
-            const body = (await req.json().catch(() => ({}))) as Record<
-                string,
-                string
-            >;
-            reference = body.custom_id ?? body.reference ?? null;
-            status = body.status ?? null;
+            // Webhook POST envoyé par FedaPay
+            const signature = req.headers.get("x-fedapay-signature");
+            const payload = await req.text();
+
+            if (!signature) {
+                return NextResponse.json(
+                    { error: "Signature manquante" },
+                    { status: 400 },
+                );
+            }
+
+            // Vérification de la signature FedaPay
+            const secret = process.env.FEDAPAY_SECRET_KEY;
+            if (secret) {
+                const expectedSignature = crypto
+                    .createHmac("sha256", secret)
+                    .update(payload)
+                    .digest("hex");
+
+                if (signature !== expectedSignature) {
+                    return NextResponse.json(
+                        { error: "Signature invalide" },
+                        { status: 400 },
+                    );
+                }
+            }
+
+            const body = JSON.parse(payload);
+            // FedaPay structure: { name: "transaction.approved", entity: { status: "approved", custom_metadata: { reference: "DEP_..." } } }
+            if (body.entity) {
+                reference = body.entity.custom_metadata?.reference ?? null;
+                status = body.entity.status ?? null;
+            }
         }
 
         if (!reference) {
             return NextResponse.json(
-                { error: "Référence manquante" },
+                { error: "Référence manquante dans le webhook" },
                 { status: 400 },
             );
         }
@@ -49,13 +79,8 @@ async function handleCallback(req: NextRequest) {
             return NextResponse.json({ ok: true, message: "Déjà traité" });
         }
 
-        // Statut FeexPay : "successful" | "success" | "paid" → COMPLETED
-        const isSuccess = [
-            "successful",
-            "success",
-            "paid",
-            "approved",
-        ].includes((status ?? "").toLowerCase());
+        // Statut FedaPay : "approved" → COMPLETED
+        const isSuccess = status === "approved";
 
         if (isSuccess) {
             const [updatedTx, updatedUser] = await prisma.$transaction([

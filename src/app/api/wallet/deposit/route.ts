@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { FedaPay, Transaction } from "fedapay";
 
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/deposit
-   Initie un paiement FeexPay et renvoie le lien de paiement.
+   Initie un paiement FedaPay et renvoie le lien de paiement.
 ───────────────────────────────────────────────────────────────── */
 export async function POST(req: NextRequest) {
     try {
@@ -19,16 +20,23 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if (!process.env.FEEXPAY_API_KEY || !process.env.FEEXPAY_SHOP_ID) {
+        if (!process.env.FEDAPAY_SECRET_KEY) {
             return NextResponse.json(
-                { error: "FeexPay non configuré" },
+                { error: "FedaPay non configuré" },
                 { status: 503 },
             );
         }
 
+        // Configuration FedaPay
+        FedaPay.setApiKey(process.env.FEDAPAY_SECRET_KEY);
+        FedaPay.setEnvironment(
+            (process.env.FEDAPAY_ENVIRONMENT as "sandbox" | "live") ||
+                "sandbox",
+        );
+
         // Générer une référence unique
         const reference = `DEP_${user.id}_${Date.now()}`;
-        const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/wallet/callback`;
+        const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet?success=true`;
 
         // Créer la Transaction PENDING en DB
         await prisma.transaction.create({
@@ -41,46 +49,35 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Appel FeexPay pour générer le lien de paiement
-        const feexResponse = await fetch(
-            "https://feexpay.me/api/orders/v1/create",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${process.env.FEEXPAY_API_KEY}`,
+        // Appel FedaPay pour générer le lien de paiement
+        try {
+            const transaction = await Transaction.create({
+                description: `Rechargement Maxi Views — ${user.email}`,
+                amount,
+                currency: { iso: "XOF" },
+                callback_url: callbackUrl,
+                customer: {
+                    email: user.email,
+                    firstname: user.name ?? "Client",
                 },
-                body: JSON.stringify({
-                    shop_id: process.env.FEEXPAY_SHOP_ID,
-                    amount,
-                    currency: "XOF",
-                    description: `Rechargement Maxi Views — ${user.email}`,
-                    custom_id: reference,
-                    callback_url: callbackUrl,
-                    redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet?success=true`,
-                }),
-            },
-        );
+                custom_metadata: { reference },
+            });
 
-        if (!feexResponse.ok) {
-            const err = await feexResponse.text();
-            console.error("FeexPay error:", err);
+            const token = await transaction.generateToken();
+
+            return NextResponse.json({
+                paymentUrl: token.url,
+                reference,
+            });
+        } catch (feexError) {
+            console.error("FedaPay error:", feexError);
             // Supprimer la transaction en échec
             await prisma.transaction.delete({ where: { reference } });
             return NextResponse.json(
-                { error: "Erreur FeexPay" },
+                { error: "Erreur FedaPay" },
                 { status: 502 },
             );
         }
-
-        const feexData = (await feexResponse.json()) as {
-            payment_url?: string;
-        };
-
-        return NextResponse.json({
-            paymentUrl: feexData.payment_url,
-            reference,
-        });
     } catch (err: any) {
         if (err.message === "UNAUTHENTICATED") {
             return NextResponse.json(

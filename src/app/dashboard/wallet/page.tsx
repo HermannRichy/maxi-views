@@ -170,7 +170,7 @@ export default function WalletPage() {
                         ) : (
                             <Wallet className="w-4 h-4" />
                         )}
-                        {depositing ? "Redirection..." : "Payer avec FeexPay"}
+                        {depositing ? "Redirection..." : "Payer avec FedaPay"}
                     </div>
                 </button>
 
