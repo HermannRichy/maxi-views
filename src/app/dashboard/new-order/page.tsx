@@ -13,34 +13,34 @@ const SERVICES_CATALOG: Record<
     { name: string; unitPrice: number; minQty: number; step: number }[]
 > = {
     TikTok: [
-        { name: "Vues", unitPrice: 0.3, minQty: 10000, step: 10000 },
-        { name: "Followers", unitPrice: 7.5, minQty: 1000, step: 500 },
-        { name: "Likes", unitPrice: 0.5, minQty: 1000, step: 500 },
+        { name: "Vues", unitPrice: 300, minQty: 10000, step: 10000 },
+        { name: "Followers", unitPrice: 7500, minQty: 1000, step: 1000 },
+        { name: "Likes", unitPrice: 500, minQty: 1000, step: 1000 },
     ],
     Instagram: [
-        { name: "Followers", unitPrice: 7.5, minQty: 1000, step: 500 },
-        { name: "Likes", unitPrice: 4, minQty: 1000, step: 500 },
-        { name: "Vues", unitPrice: 0.5, minQty: 10000, step: 10000 },
+        { name: "Followers", unitPrice: 7500, minQty: 1000, step: 1000 },
+        { name: "Likes", unitPrice: 4000, minQty: 1000, step: 1000 },
+        { name: "Vues", unitPrice: 500, minQty: 10000, step: 10000 },
     ],
     YouTube: [
-        { name: "Vues", unitPrice: 0.5, minQty: 10000, step: 10000 },
-        { name: "Abonnés", unitPrice: 9, minQty: 500, step: 500 },
-        { name: "Likes", unitPrice: 5, minQty: 500, step: 500 },
+        { name: "Vues", unitPrice: 500, minQty: 10000, step: 10000 },
+        { name: "Abonnés", unitPrice: 9000, minQty: 1000, step: 1000 },
+        { name: "Likes", unitPrice: 5000, minQty: 1000, step: 1000 },
     ],
     Facebook: [
-        { name: "Likes page", unitPrice: 4, minQty: 1000, step: 500 },
-        { name: "Followers", unitPrice: 6, minQty: 1000, step: 500 },
+        { name: "Likes page", unitPrice: 4000, minQty: 1000, step: 1000 },
+        { name: "Followers", unitPrice: 6000, minQty: 1000, step: 1000 },
     ],
     Telegram: [
-        { name: "Membres", unitPrice: 12.5, minQty: 1000, step: 500 },
-        { name: "Vues", unitPrice: 0.5, minQty: 10000, step: 10000 },
+        { name: "Membres", unitPrice: 12500, minQty: 1000, step: 1000 },
+        { name: "Vues", unitPrice: 500, minQty: 10000, step: 10000 },
     ],
     "X (Twitter)": [
-        { name: "Followers", unitPrice: 9.5, minQty: 1000, step: 500 },
-        { name: "Likes", unitPrice: 5, minQty: 1000, step: 500 },
+        { name: "Followers", unitPrice: 9500, minQty: 1000, step: 1000 },
+        { name: "Likes", unitPrice: 5000, minQty: 1000, step: 1000 },
     ],
     WhatsApp: [
-        { name: "Membres canal", unitPrice: 10, minQty: 500, step: 500 },
+        { name: "Membres canal", unitPrice: 10000, minQty: 1000, step: 1000 },
     ],
 };
 
