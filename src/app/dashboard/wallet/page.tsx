@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
 import {
     Wallet,
@@ -20,6 +21,12 @@ type Transaction = {
     reference: string;
     createdAt: string;
 };
+
+declare global {
+    interface Window {
+        FedaPay: any;
+    }
+}
 
 const AMOUNTS = [1000, 2000, 5000, 10000, 25000, 50000];
 
@@ -58,14 +65,39 @@ export default function WalletPage() {
             const data = await res.json();
             if (!res.ok) {
                 toast.error(data.error);
+                setDepositing(false);
                 return;
             }
-            if (data.paymentUrl) {
-                router.push(data.paymentUrl);
+
+            // Ouverture du widget FedaPay Checkout.js
+            if (typeof window !== "undefined" && window.FedaPay) {
+                const widget = window.FedaPay.init({
+                    public_key:
+                        process.env.NEXT_PUBLIC_FEDAPAY_PUBLIC_KEY || "",
+                    transaction: {
+                        amount: data.amount,
+                        description: `Rechargement Maxi Views — ${data.customerEmail}`,
+                        custom_metadata: { reference: data.reference },
+                    },
+                    customer: {
+                        email: data.customerEmail,
+                        firstname: data.customerName,
+                    },
+                    onComplete: () => {
+                        toast.success(
+                            "Paiement terminé ! Validation en cours...",
+                        );
+                        setTimeout(() => window.location.reload(), 2000);
+                    },
+                });
+                widget.open();
+                setDepositing(false);
+            } else {
+                toast.error("Le module de paiement n'a pas pu être chargé");
+                setDepositing(false);
             }
         } catch {
             toast.error("Erreur lors de l'initialisation du paiement");
-        } finally {
             setDepositing(false);
         }
     };
@@ -80,6 +112,10 @@ export default function WalletPage() {
 
     return (
         <div className="space-y-8 max-w-2xl">
+            <Script
+                src="https://cdn.fedapay.com/checkout.js?v=1.1.2"
+                strategy="lazyOnload"
+            />
             <div>
                 <h1 className="text-2xl font-bold">Portefeuille</h1>
                 <p className="text-muted-foreground text-sm mt-1">
@@ -170,7 +206,7 @@ export default function WalletPage() {
                         ) : (
                             <Wallet className="w-4 h-4" />
                         )}
-                        {depositing ? "Redirection..." : "Payer avec FedaPay"}
+                        {depositing ? "Chargement..." : "Payer avec FedaPay"}
                     </div>
                 </button>
 

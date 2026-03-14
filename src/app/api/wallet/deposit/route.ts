@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { FedaPay, Transaction } from "fedapay";
 
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/deposit
@@ -27,13 +26,6 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Configuration FedaPay
-        FedaPay.setApiKey(process.env.FEDAPAY_SECRET_KEY);
-        FedaPay.setEnvironment(
-            (process.env.FEDAPAY_ENVIRONMENT as "sandbox" | "live") ||
-                "sandbox",
-        );
-
         // Générer une référence unique
         const reference = `DEP_${user.id}_${Date.now()}`;
         const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet?success=true`;
@@ -49,35 +41,15 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Appel FedaPay pour générer le lien de paiement
-        try {
-            const transaction = await Transaction.create({
-                description: `Rechargement Maxi Views — ${user.email}`,
-                amount,
-                currency: { iso: "XOF" },
-                callback_url: callbackUrl,
-                customer: {
-                    email: user.email,
-                    firstname: user.name ?? "Client",
-                },
-                custom_metadata: { reference },
-            });
+        // L'API FedaPay est désormais appelée directement sur le Frontend via le widget Checkout.js.
+        // La redirection sera gérée côté client.
 
-            const token = await transaction.generateToken();
-
-            return NextResponse.json({
-                paymentUrl: token.url,
-                reference,
-            });
-        } catch (feexError) {
-            console.error("FedaPay error:", feexError);
-            // Supprimer la transaction en échec
-            await prisma.transaction.delete({ where: { reference } });
-            return NextResponse.json(
-                { error: "Erreur FedaPay" },
-                { status: 502 },
-            );
-        }
+        return NextResponse.json({
+            reference,
+            amount,
+            customerEmail: user.email,
+            customerName: user.name ?? "Client",
+        });
     } catch (err: any) {
         if (err.message === "UNAUTHENTICATED") {
             return NextResponse.json(
