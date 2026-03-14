@@ -83,11 +83,24 @@ export default function WalletPage() {
                         email: data.customerEmail,
                         firstname: data.customerName,
                     },
-                    onComplete: () => {
-                        toast.success(
-                            "Paiement terminé ! Validation en cours...",
-                        );
-                        setTimeout(() => window.location.reload(), 2000);
+                    onComplete: (reason: any, transaction: any) => {
+                        if (reason === window.FedaPay.CHECKOUT_COMPLETED) {
+                            toast.success(
+                                "Paiement terminé ! Validation en cours...",
+                            );
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else if (reason === window.FedaPay.DIALOG_DISMISSED) {
+                            // L'utilisateur a fermé la pop-up sans terminer, on marque la transaction FAILED.
+                            fetch("/api/wallet/cancel", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    reference: data.reference,
+                                }),
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        }
                     },
                 });
                 widget.open();
