@@ -74,6 +74,21 @@ export default async function DashboardLayout({
                             {item.label}
                         </Link>
                     ))}
+
+                    {/* Admin link */}
+                    {user.role === "ADMIN" && (
+                        <>
+                            <div className="h-px bg-border/50 my-2" />
+                            <Link
+                                href="/admin"
+                                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary hover:bg-primary/5 transition-colors"
+                                style={{ clipPath: CLIP_TR_SM }}
+                            >
+                                <ShieldCheck className="w-4 h-4" />
+                                Panel Admin
+                            </Link>
+                        </>
+                    )}
                 </nav>
 
                 {/* Footer */}
