@@ -73,6 +73,10 @@ Ouvrez [http://localhost:3000](http://localhost:3000) pour voir le résultat.
 - `prisma/` : Schéma de la base de données.
 - `src/proxy.ts` : Middleware Clerk (Convention Next.js 16).
 
+## 💳 Paiements (FedaPay)
+
+Voir la documentation: `docs/fedapay.md`.
+
 ## 🎨 Personnalisation
 
 ### Thème

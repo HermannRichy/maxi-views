@@ -31,27 +31,54 @@ async function handleCallback(req: NextRequest) {
                 );
             }
 
-            // Vérification de la signature FedaPay
-            const secret = process.env.FEDAPAY_SECRET_KEY;
-            if (secret) {
-                const expectedSignature = crypto
-                    .createHmac("sha256", secret)
-                    .update(payload)
-                    .digest("hex");
-
-                if (signature !== expectedSignature) {
-                    return NextResponse.json(
-                        { error: "Signature invalide" },
-                        { status: 400 },
-                    );
-                }
+            // Vérification de la signature FedaPay (OBLIGATOIRE)
+            // Utiliser la clé secrète dédiée au webhook (signing secret), pas la clé API.
+            const secret = process.env.FEDAPAY_WEBHOOK_SECRET;
+            if (!secret) {
+                return NextResponse.json(
+                    { error: "Webhook FedaPay non configuré" },
+                    { status: 503 },
+                );
             }
 
-            const body = JSON.parse(payload);
+            const expectedSignature = crypto
+                .createHmac("sha256", secret)
+                .update(payload)
+                .digest("hex");
+
+            const sigBuf = Buffer.from(signature, "utf8");
+            const expectedBuf = Buffer.from(expectedSignature, "utf8");
+            const signaturesMatch =
+                sigBuf.length === expectedBuf.length &&
+                crypto.timingSafeEqual(sigBuf, expectedBuf);
+
+            if (!signaturesMatch) {
+                return NextResponse.json(
+                    { error: "Signature invalide" },
+                    { status: 400 },
+                );
+            }
+
+            let body: any;
+            try {
+                body = JSON.parse(payload);
+            } catch {
+                return NextResponse.json(
+                    { error: "Payload JSON invalide" },
+                    { status: 400 },
+                );
+            }
+
+            const eventName = body?.name as string | undefined;
             // FedaPay structure: { name: "transaction.approved", entity: { status: "approved", custom_metadata: { reference: "DEP_..." } } }
             if (body.entity) {
                 reference = body.entity.custom_metadata?.reference ?? null;
                 status = body.entity.status ?? null;
+            }
+
+            // Ne traiter que les événements transaction.* (défense en profondeur)
+            if (!eventName || !eventName.startsWith("transaction.")) {
+                return NextResponse.json({ ok: true, message: "Événement ignoré" });
             }
         }
 
@@ -80,7 +107,11 @@ async function handleCallback(req: NextRequest) {
         }
 
         // Statut FedaPay : "approved" → COMPLETED
-        const isSuccess = status === "approved";
+        const normalizedStatus = (status ?? "").toLowerCase();
+        const isSuccess = normalizedStatus === "approved";
+        const isFailureTerminal = ["declined", "canceled", "cancelled", "failed"].includes(
+            normalizedStatus,
+        );
 
         if (isSuccess) {
             const [updatedTx, updatedUser] = await prisma.$transaction([
@@ -105,15 +136,22 @@ async function handleCallback(req: NextRequest) {
             return NextResponse.json({ ok: true });
         }
 
-        // Echec FeexPay
-        await prisma.transaction.update({
-            where: { reference },
-            data: { status: "FAILED" },
-        });
+        // Échec terminal uniquement (ne pas marquer FAILED sur statuts non terminaux)
+        if (isFailureTerminal) {
+            await prisma.transaction.update({
+                where: { reference },
+                data: { status: "FAILED" },
+            });
+
+            return NextResponse.json({
+                ok: true,
+                message: "Paiement échoué enregistré",
+            });
+        }
 
         return NextResponse.json({
             ok: true,
-            message: "Paiement échoué enregistré",
+            message: "Statut non terminal ignoré",
         });
     } catch (err) {
         console.error("Callback error:", err);

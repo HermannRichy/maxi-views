@@ -96,6 +96,7 @@ export async function sendDepositConfirmed({
     amount,
     newBalance,
 }: DepositConfirmedProps) {
+    if (!resend) return;
     return resend.emails.send({
         from: FROM,
         to,
@@ -126,6 +127,7 @@ export async function sendOrderCreatedUser({
     quantity,
     amount,
 }: OrderCreatedUserProps) {
+    if (!resend) return;
     return resend.emails.send({
         from: FROM,
         to,
@@ -159,6 +161,7 @@ export async function sendOrderCreatedAdmin({
     amount,
     link,
 }: OrderCreatedAdminProps) {
+    if (!resend) return;
     return resend.emails.send({
         from: FROM,
         to: ADMIN_EMAIL,
@@ -192,6 +195,7 @@ export async function sendOrderStatusChanged({
     status,
     adminNote,
 }: OrderStatusChangedProps) {
+    if (!resend) return;
     const label = STATUS_LABELS[status] ?? status;
     const emoji =
         status === "COMPLETED"
