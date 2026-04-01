@@ -92,9 +92,38 @@ async function handleCallback(req: NextRequest) {
     try {
         // ── GET : redirect navigateur depuis FedaPay ──────────────────────
         if (req.method === "GET") {
-            return NextResponse.redirect(
-                `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet`,
-            );
+            // Import FedaPay dynamiquement pour l'utiliser dans la vérification
+            const FedaPayModule = await import("fedapay");
+            const { FedaPay, Transaction } = FedaPayModule.default || FedaPayModule;
+
+            const urlStatus = req.nextUrl.searchParams.get("status");
+            const id = req.nextUrl.searchParams.get("id");
+
+            let finalStatus = "";
+
+            if (urlStatus && id) {
+                const fedapaySecret = process.env.FEDAPAY_SECRET_KEY;
+                if (fedapaySecret) {
+                    FedaPay.setApiKey(fedapaySecret);
+                    FedaPay.setEnvironment(
+                        fedapaySecret.includes("live") ? "live" : "sandbox"
+                    );
+
+                    try {
+                        const transaction = await Transaction.retrieve(parseInt(id, 10));
+                        finalStatus = transaction.status === "approved" ? "success" : "failed";
+                    } catch (error) {
+                        finalStatus = "failed";
+                    }
+                }
+            }
+
+            let redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet`;
+            if (finalStatus) {
+                redirectUrl += `?paymentStatus=${finalStatus}`;
+            }
+
+            return NextResponse.redirect(redirectUrl);
         }
 
         // ── POST : webhook FedaPay ────────────────────────────────────────

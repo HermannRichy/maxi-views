@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
 import {
     Wallet,
@@ -24,7 +23,6 @@ type Transaction = {
 
 declare global {
     interface Window {
-        FedaPay: any;
     }
 }
 
@@ -40,6 +38,18 @@ export default function WalletPage() {
     const router = useRouter();
 
     useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const paymentStatus = params.get("paymentStatus");
+            if (paymentStatus === "success") {
+                toast.success("Paiement validé avec succès !");
+                router.replace("/dashboard/wallet");
+            } else if (paymentStatus === "failed") {
+                toast.error("Le paiement a échoué ou a été annulé.");
+                router.replace("/dashboard/wallet");
+            }
+        }
+
         fetch("/api/wallet/balance")
             .then((r) => r.json())
             .then((d) => {
@@ -64,49 +74,16 @@ export default function WalletPage() {
             });
             const data = await res.json();
             if (!res.ok) {
-                toast.error(data.error);
+                toast.error(data.error || "Erreur de paiement");
                 setDepositing(false);
                 return;
             }
 
-            // Ouverture du widget FedaPay Checkout.js
-            if (typeof window !== "undefined" && window.FedaPay) {
-                const widget = window.FedaPay.init({
-                    public_key:
-                        process.env.NEXT_PUBLIC_FEDAPAY_PUBLIC_KEY || "",
-                    transaction: {
-                        amount: data.amount,
-                        description: `Rechargement Maxi Views — ${data.customerEmail}`,
-                        custom_metadata: { reference: data.reference },
-                    },
-                    customer: {
-                        email: data.customerEmail,
-                        firstname: data.customerName,
-                    },
-                    onComplete: (reason: any, transaction: any) => {
-                        if (reason === window.FedaPay.CHECKOUT_COMPLETED) {
-                            toast.success(
-                                "Paiement terminé ! Validation en cours...",
-                            );
-                            setTimeout(() => window.location.reload(), 2000);
-                        } else if (reason === window.FedaPay.DIALOG_DISMISSED) {
-                            // L'utilisateur a fermé la pop-up sans terminer, on marque la transaction FAILED.
-                            fetch("/api/wallet/cancel", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                    reference: data.reference,
-                                }),
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        }
-                    },
-                });
-                widget.open();
-                setDepositing(false);
+            // Redirection vers le lien sécurisé FedaPay généré par le SDK Backend
+            if (data.url) {
+                window.location.href = data.url;
             } else {
-                toast.error("Le module de paiement n'a pas pu être chargé");
+                toast.error("Le lien de paiement n'a pas été généré.");
                 setDepositing(false);
             }
         } catch {
@@ -125,10 +102,6 @@ export default function WalletPage() {
 
     return (
         <div className="space-y-8 max-w-2xl">
-            <Script
-                src="https://cdn.fedapay.com/checkout.js?v=1.1.2"
-                strategy="lazyOnload"
-            />
             <div>
                 <h1 className="text-2xl font-bold">Portefeuille</h1>
                 <p className="text-muted-foreground text-sm mt-1">

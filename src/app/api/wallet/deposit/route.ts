@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { FedaPay, Transaction } from "fedapay";
 
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/deposit
-   Initie un paiement FedaPay et renvoie le lien de paiement.
+   Initie un paiement FedaPay via SDK Node.js et renvoie l'url de redirection.
 ───────────────────────────────────────────────────────────────── */
 export async function POST(req: NextRequest) {
     try {
@@ -19,16 +20,25 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if (!process.env.FEDAPAY_SECRET_KEY) {
+        const fedapaySecret = process.env.FEDAPAY_SECRET_KEY;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+        if (!fedapaySecret || !appUrl) {
             return NextResponse.json(
-                { error: "FedaPay non configuré" },
+                { error: "FedaPay ou URL de l'app non configuré" },
                 { status: 503 },
             );
         }
 
+        // Configuration du SDK FedaPay
+        FedaPay.setApiKey(fedapaySecret);
+        FedaPay.setEnvironment(
+            fedapaySecret.includes("live") ? "live" : "sandbox"
+        );
+
         // Générer une référence unique
         const reference = `DEP_${user.id}_${Date.now()}`;
-        const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet?success=true`;
+        const callbackUrl = `${appUrl}/api/wallet/callback`;
 
         // Créer la Transaction PENDING en DB
         await prisma.transaction.create({
@@ -41,14 +51,25 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // L'API FedaPay est désormais appelée directement sur le Frontend via le widget Checkout.js.
-        // La redirection sera gérée côté client.
+        // Appel au SDK pour créer la transaction FedaPay
+        const transaction = await Transaction.create({
+            description: `Rechargement Maxi Views — ${user.email}`,
+            amount: amount,
+            callback_url: callbackUrl,
+            currency: { iso: "XOF" },
+            custom_metadata: { reference },
+            customer: {
+                email: user.email,
+                firstname: user.name ?? "Client",
+            },
+        });
+
+        // Générer le lien de paiement via le token
+        const token = await transaction.generateToken();
 
         return NextResponse.json({
+            url: token.url,
             reference,
-            amount,
-            customerEmail: user.email,
-            customerName: user.name ?? "Client",
         });
     } catch (err: any) {
         if (err.message === "UNAUTHENTICATED") {
@@ -58,6 +79,7 @@ export async function POST(req: NextRequest) {
             );
         }
         console.error("Deposit error:", err);
-        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+        return NextResponse.json({ error: "Erreur serveur lors de l'initialisation du paiement FedaPay" }, { status: 500 });
     }
 }
+
