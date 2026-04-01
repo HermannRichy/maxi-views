@@ -118,12 +118,16 @@ async function handleCallback(req: NextRequest) {
                 }
             }
 
-            let redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/wallet`;
+            // Utilisation de la structure URL standard (sécurisé, évite les double-slash)
+            const redirectUrl = new URL("/dashboard/wallet", req.url);
+            
             if (finalStatus) {
-                redirectUrl += `?paymentStatus=${finalStatus}`;
+                redirectUrl.searchParams.set("paymentStatus", finalStatus);
             }
 
-            return NextResponse.redirect(redirectUrl);
+            // 303 See Other ou 302 Found pour explicitement signifier une redirection "propre"
+            // au lieu du 307 Temporary Redirect par défaut de Next.js
+            return NextResponse.redirect(redirectUrl.toString(), { status: 303 });
         }
 
         // ── POST : webhook FedaPay ────────────────────────────────────────

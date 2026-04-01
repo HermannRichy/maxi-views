@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         }
 
         const fedapaySecret = process.env.FEDAPAY_SECRET_KEY;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+        const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
 
         if (!fedapaySecret || !appUrl) {
             return NextResponse.json(
@@ -36,9 +36,12 @@ export async function POST(req: NextRequest) {
             fedapaySecret.includes("live") ? "live" : "sandbox"
         );
 
+        // Nettoyage de l'URL pour éviter les double-slash
+        const baseUrl = appUrl.endsWith("/") ? appUrl.slice(0, -1) : appUrl;
+        
         // Générer une référence unique
         const reference = `DEP_${user.id}_${Date.now()}`;
-        const callbackUrl = `${appUrl}/api/wallet/callback`;
+        const callbackUrl = `${baseUrl}/api/wallet/callback`;
 
         // Créer la Transaction PENDING en DB
         await prisma.transaction.create({
