@@ -3,39 +3,35 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import {
-    ArrowRight,
-    Wallet,
-    ShoppingCart,
-    TrendingUp,
-    Plus,
-} from "lucide-react";
-import {
-    CLIP_TR_SM,
-    FuturisticCard,
-    SectionBorder,
-} from "@/components/ui/futuristic";
+    IconArrowRight,
+    IconWallet,
+    IconShoppingCart,
+    IconTrendingUp,
+    IconPlus,
+} from "@tabler/icons-react";
+import { FuturisticCard, SectionBorder } from "@/components/ui/futuristic";
 
 const STATUS_CONFIG = {
     PENDING: {
         label: "En attente",
-        color: "text-yellow-400",
-        bg: "bg-yellow-400/10",
+        color: "text-warning",
+        bg: "bg-warning/10",
     },
     PROCESSING: {
         label: "En cours",
-        color: "text-blue-400",
-        bg: "bg-blue-400/10",
+        color: "text-info",
+        bg: "bg-info/10",
     },
     COMPLETED: {
         label: "Terminée",
-        color: "text-green-400",
-        bg: "bg-green-400/10",
+        color: "text-success",
+        bg: "bg-success/10",
     },
-    FAILED: { label: "Échouée", color: "text-red-400", bg: "bg-red-400/10" },
+    FAILED: { label: "Échouée", color: "text-destructive", bg: "bg-destructive/10" },
     CANCELLED: {
         label: "Annulée",
-        color: "text-zinc-400",
-        bg: "bg-zinc-400/10",
+        color: "text-muted-foreground",
+        bg: "bg-muted",
     },
 } as const;
 
@@ -90,18 +86,15 @@ export default async function DashboardPage() {
                                 </span>
                             </p>
                         </div>
-                        <div
-                            className="w-9 h-9 bg-primary/10 flex items-center justify-center text-primary"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
-                            <Wallet className="w-4 h-4" />
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <IconWallet className="w-4 h-4" />
                         </div>
                     </div>
                     <Link
                         href="/dashboard/wallet"
                         className="mt-4 flex items-center gap-1 text-xs text-primary hover:underline"
                     >
-                        Recharger <ArrowRight className="w-3 h-3" />
+                        Recharger <IconArrowRight className="w-3 h-3" />
                     </Link>
                 </FuturisticCard>
 
@@ -116,11 +109,8 @@ export default async function DashboardPage() {
                                 {totalOrders}
                             </p>
                         </div>
-                        <div
-                            className="w-9 h-9 bg-primary/10 flex items-center justify-center text-primary"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
-                            <ShoppingCart className="w-4 h-4" />
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <IconShoppingCart className="w-4 h-4" />
                         </div>
                     </div>
                 </FuturisticCard>
@@ -132,15 +122,12 @@ export default async function DashboardPage() {
                             <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                                 Terminées
                             </p>
-                            <p className="text-3xl font-black text-green-400 tabular-nums">
+                            <p className="text-3xl font-black text-success tabular-nums">
                                 {completedOrders}
                             </p>
                         </div>
-                        <div
-                            className="w-9 h-9 bg-green-400/10 flex items-center justify-center text-green-400"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
-                            <TrendingUp className="w-4 h-4" />
+                        <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center text-success">
+                            <IconTrendingUp className="w-4 h-4" />
                         </div>
                     </div>
                 </FuturisticCard>
@@ -150,33 +137,15 @@ export default async function DashboardPage() {
             <div className="flex flex-wrap gap-3">
                 <Link
                     href="/dashboard/new-order"
-                    className="group relative inline-block"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all"
                 >
-                    <div
-                        className="absolute inset-0 bg-primary/30 translate-x-[3px] translate-y-[3px]"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    />
-                    <div
-                        className="relative px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 group-hover:bg-primary/90 transition-colors"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    >
-                        <Plus className="w-4 h-4" /> Nouvelle commande
-                    </div>
+                    <IconPlus className="w-4 h-4" /> Nouvelle commande
                 </Link>
                 <Link
                     href="/dashboard/wallet"
-                    className="group relative inline-block"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-muted text-foreground text-sm font-semibold hover:bg-accent transition-colors"
                 >
-                    <div
-                        className="absolute inset-0 bg-border/60 translate-x-[3px] translate-y-[3px]"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    />
-                    <div
-                        className="relative px-5 py-2.5 bg-muted text-foreground text-sm font-semibold flex items-center gap-2 group-hover:bg-muted/70 transition-colors"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    >
-                        <Wallet className="w-4 h-4" /> Recharger
-                    </div>
+                    <IconWallet className="w-4 h-4" /> Recharger
                 </Link>
             </div>
 
@@ -188,13 +157,13 @@ export default async function DashboardPage() {
                         href="/dashboard/orders"
                         className="text-xs text-primary hover:underline flex items-center gap-1"
                     >
-                        Tout voir <ArrowRight className="w-3 h-3" />
+                        Tout voir <IconArrowRight className="w-3 h-3" />
                     </Link>
                 </div>
 
                 {recentOrders.length === 0 ? (
                     <FuturisticCard className="p-8 text-center">
-                        <ShoppingCart className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
+                        <IconShoppingCart className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
                         <p className="text-muted-foreground text-sm">
                             Aucune commande pour l&apos;instant
                         </p>
@@ -228,7 +197,7 @@ export default async function DashboardPage() {
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0">
                                         <span
-                                            className={`text-xs font-medium px-2 py-0.5 rounded-sm ${st.color} ${st.bg}`}
+                                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color} ${st.bg}`}
                                         >
                                             {st.label}
                                         </span>

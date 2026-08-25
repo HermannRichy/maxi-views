@@ -2,21 +2,20 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import {
-    LayoutDashboard,
-    Wallet,
-    ShoppingCart,
-    Plus,
-    ShieldCheck,
-} from "lucide-react";
-import { IconEyeShare } from "@tabler/icons-react";
+    IconEyeShare,
+    IconLayoutDashboard,
+    IconWallet,
+    IconShoppingCart,
+    IconPlus,
+    IconShieldCheck,
+} from "@tabler/icons-react";
 import { SignOutConfirm } from "@/components/ui/sign-out-confirm";
-import { CLIP_TR_SM } from "@/components/ui/futuristic";
 
 const NAV_ITEMS = [
-    { href: "/dashboard", label: "Tableau de bord", Icon: LayoutDashboard },
-    { href: "/dashboard/new-order", label: "Nouvelle commande", Icon: Plus },
-    { href: "/dashboard/orders", label: "Mes commandes", Icon: ShoppingCart },
-    { href: "/dashboard/wallet", label: "Portefeuille", Icon: Wallet },
+    { href: "/dashboard", label: "Tableau de bord", Icon: IconLayoutDashboard },
+    { href: "/dashboard/new-order", label: "Nouvelle commande", Icon: IconPlus },
+    { href: "/dashboard/orders", label: "Mes commandes", Icon: IconShoppingCart },
+    { href: "/dashboard/wallet", label: "Portefeuille", Icon: IconWallet },
 ];
 
 export default async function DashboardLayout({
@@ -30,14 +29,11 @@ export default async function DashboardLayout({
     return (
         <div className="min-h-screen bg-background flex">
             {/* ── Sidebar ── */}
-            <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border/50 shrink-0">
+            <aside className="hidden md:flex flex-col w-64 bg-card border-r border-white/10 shrink-0">
                 {/* Logo */}
-                <div className="p-6 border-b border-border/50">
+                <div className="p-6 border-b border-white/10">
                     <Link href="/" className="flex items-center gap-2 group">
-                        <div
-                            className="w-8 h-8 bg-primary flex items-center justify-center"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
+                        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
                             <IconEyeShare className="w-4 h-4 text-primary-foreground" />
                         </div>
                         <span className="font-display text-lg font-bold">
@@ -47,10 +43,7 @@ export default async function DashboardLayout({
                 </div>
 
                 {/* Balance chip */}
-                <div
-                    className="mx-4 mt-4 p-3 bg-primary/5 border border-primary/20"
-                    style={{ clipPath: CLIP_TR_SM }}
-                >
+                <div className="mx-4 mt-4 p-3 rounded-xl bg-primary/5 border border-primary/20">
                     <p className="text-xs text-muted-foreground mb-0.5">
                         Solde
                     </p>
@@ -65,8 +58,7 @@ export default async function DashboardLayout({
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors group rounded-none"
-                            style={{ clipPath: CLIP_TR_SM }}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors group"
                         >
                             <item.Icon className="w-4 h-4 group-hover:text-primary transition-colors" />
                             {item.label}
@@ -76,13 +68,12 @@ export default async function DashboardLayout({
                     {/* Admin link */}
                     {user.role === "ADMIN" && (
                         <>
-                            <div className="h-px bg-border/50 my-2" />
+                            <div className="h-px bg-white/10 my-2" />
                             <Link
                                 href="/admin"
-                                className="flex items-center gap-3 px-3 py-2.5 text-sm text-primary hover:bg-primary/5 transition-colors"
-                                style={{ clipPath: CLIP_TR_SM }}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-primary hover:bg-primary/5 transition-colors"
                             >
-                                <ShieldCheck className="w-4 h-4" />
+                                <IconShieldCheck className="w-4 h-4" />
                                 Panel Admin
                             </Link>
                         </>
@@ -90,7 +81,7 @@ export default async function DashboardLayout({
                 </nav>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-border/50 space-y-1">
+                <div className="p-4 border-t border-white/10 space-y-1">
                     <div className="px-3 py-2">
                         <p className="text-xs font-medium truncate">
                             {user.name ?? user.email}
@@ -99,19 +90,16 @@ export default async function DashboardLayout({
                             {user.email}
                         </p>
                     </div>
-                    <SignOutConfirm className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors w-full" />
+                    <SignOutConfirm className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors w-full" />
                 </div>
             </aside>
 
             {/* ── Main ── */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Mobile top bar */}
-                <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border/50 bg-card">
+                <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-white/10 bg-card">
                     <Link href="/" className="flex items-center gap-2">
-                        <div
-                            className="w-7 h-7 bg-primary flex items-center justify-center"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
+                        <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
                             <IconEyeShare className="w-3.5 h-3.5 text-primary-foreground" />
                         </div>
                         <span className="font-display font-bold text-base">
@@ -129,7 +117,7 @@ export default async function DashboardLayout({
                 </main>
 
                 {/* Mobile bottom nav */}
-                <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-border/50 bg-card/90 backdrop-blur-lg">
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-white/10 bg-card/90 backdrop-blur-lg">
                     {NAV_ITEMS.map((item) => (
                         <Link
                             key={item.href}

@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
+import { FuturisticCard } from "@/components/ui/futuristic";
 import {
-    RefreshCw,
-    CheckCircle2,
-    Clock,
-    XCircle,
-    Ban,
-    Loader2,
-    Save,
-    Link as LinkIcon,
-} from "lucide-react";
+    IconRefresh,
+    IconCircleCheck,
+    IconClock,
+    IconCircleX,
+    IconBan,
+    IconLoader2,
+    IconDeviceFloppy,
+    IconLink,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 
 type OrderStatus =
@@ -41,33 +41,33 @@ const STATUS_CONFIG: Record<
 > = {
     PENDING: {
         label: "En attente",
-        color: "text-yellow-400",
-        bg: "bg-yellow-400/10",
-        Icon: Clock,
+        color: "text-warning",
+        bg: "bg-warning/10",
+        Icon: IconClock,
     },
     PROCESSING: {
         label: "En cours",
-        color: "text-blue-400",
-        bg: "bg-blue-400/10",
-        Icon: Loader2,
+        color: "text-info",
+        bg: "bg-info/10",
+        Icon: IconLoader2,
     },
     COMPLETED: {
         label: "Terminée",
-        color: "text-green-400",
-        bg: "bg-green-400/10",
-        Icon: CheckCircle2,
+        color: "text-success",
+        bg: "bg-success/10",
+        Icon: IconCircleCheck,
     },
     FAILED: {
         label: "Échouée",
-        color: "text-red-400",
-        bg: "bg-red-400/10",
-        Icon: XCircle,
+        color: "text-destructive",
+        bg: "bg-destructive/10",
+        Icon: IconCircleX,
     },
     CANCELLED: {
         label: "Annulée",
-        color: "text-zinc-400",
-        bg: "bg-zinc-400/10",
-        Icon: Ban,
+        color: "text-muted-foreground",
+        bg: "bg-muted",
+        Icon: IconBan,
     },
 };
 
@@ -124,7 +124,7 @@ function OrderRow({
         <FuturisticCard className="overflow-hidden">
             {/* Header row */}
             <button
-                className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/20 transition-colors"
+                className="w-full flex items-center gap-3 p-4 text-left hover:bg-accent/30 transition-colors"
                 onClick={() => setExpanded((e) => !e)}
             >
                 <div className="flex-1 min-w-0">
@@ -132,15 +132,11 @@ function OrderRow({
                         <span className="font-bold text-sm">
                             #{order.id.slice(-8).toUpperCase()}
                         </span>
-                        <span
-                            className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
+                        <span className="text-xs text-muted-foreground bg-muted/50 rounded-full px-2 py-0.5">
                             {order.network}
                         </span>
                         <span
-                            className={`text-xs font-medium px-2 py-0.5 flex items-center gap-1 ${st.color} ${st.bg}`}
-                            style={{ clipPath: CLIP_TR_SM }}
+                            className={`text-xs font-medium rounded-full px-2 py-0.5 flex items-center gap-1 ${st.color} ${st.bg}`}
                         >
                             <st.Icon className="w-3 h-3" /> {st.label}
                         </span>
@@ -163,10 +159,10 @@ function OrderRow({
 
             {/* Expanded panel */}
             {expanded && (
-                <div className="border-t border-border/50 p-4 space-y-4 bg-muted/10">
+                <div className="border-t border-white/10 p-4 space-y-4 bg-muted/10">
                     {/* Link */}
                     <div className="flex items-center gap-2 text-sm">
-                        <LinkIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <IconLink className="w-4 h-4 text-muted-foreground shrink-0" />
                         <a
                             href={order.link}
                             target="_blank"
@@ -189,8 +185,7 @@ function OrderRow({
                                     <button
                                         key={s}
                                         onClick={() => setStatus(s)}
-                                        className={`text-xs font-semibold px-3 py-1.5 border transition-colors ${status === s ? `${cfg.color} ${cfg.bg} border-current` : "border-border text-muted-foreground hover:border-primary/50"}`}
-                                        style={{ clipPath: CLIP_TR_SM }}
+                                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${status === s ? `${cfg.color} ${cfg.bg} border-current` : "border-white/10 text-muted-foreground hover:border-primary/50"}`}
                                     >
                                         {cfg.label}
                                     </button>
@@ -209,8 +204,7 @@ function OrderRow({
                             value={japOrderId}
                             onChange={(e) => setJapOrderId(e.target.value)}
                             placeholder="Saisir après avoir lancé sur JAP"
-                            className="w-full bg-muted/30 border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                            style={{ clipPath: CLIP_TR_SM }}
+                            className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
                         />
                     </div>
 
@@ -224,8 +218,7 @@ function OrderRow({
                             onChange={(e) => setAdminNote(e.target.value)}
                             rows={2}
                             placeholder="Informations complémentaires pour le client..."
-                            className="w-full bg-muted/30 border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary resize-none"
-                            style={{ clipPath: CLIP_TR_SM }}
+                            className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary resize-none"
                         />
                     </div>
 
@@ -234,23 +227,14 @@ function OrderRow({
                         <button
                             onClick={save}
                             disabled={saving}
-                            className="group relative inline-block disabled:opacity-50"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm shadow-primary/20 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30 transition-all disabled:opacity-50"
                         >
-                            <div
-                                className="absolute inset-0 bg-primary/30 translate-x-[2px] translate-y-[2px]"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            />
-                            <div
-                                className="relative px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 group-hover:bg-primary/90 transition-colors"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            >
-                                {saving ? (
-                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                    <Save className="w-3.5 h-3.5" />
-                                )}
-                                Enregistrer
-                            </div>
+                            {saving ? (
+                                <IconRefresh className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                                <IconDeviceFloppy className="w-3.5 h-3.5" />
+                            )}
+                            Enregistrer
                         </button>
                     </div>
                 </div>
@@ -283,7 +267,7 @@ export default function AdminOrdersPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-40">
-                <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                <IconRefresh className="w-6 h-6 animate-spin text-primary" />
             </div>
         );
     }
@@ -310,7 +294,7 @@ export default function AdminOrdersPage() {
                     }}
                     className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                    <RefreshCw className="w-4 h-4" /> Rafraîchir
+                    <IconRefresh className="w-4 h-4" /> Rafraîchir
                 </button>
             </div>
 
@@ -320,8 +304,7 @@ export default function AdminOrdersPage() {
                     <button
                         key={s}
                         onClick={() => setFilter(s)}
-                        className={`text-xs font-semibold px-3 py-1.5 border transition-colors ${filter === s ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}
-                        style={{ clipPath: CLIP_TR_SM }}
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${filter === s ? "border-primary bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:border-primary/50"}`}
                     >
                         {s === "ALL"
                             ? `Toutes (${orders.length})`

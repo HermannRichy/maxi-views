@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
-import { ShoppingCart, RefreshCw } from "lucide-react";
+import { FuturisticCard } from "@/components/ui/futuristic";
+import { IconShoppingCart, IconRefresh } from "@tabler/icons-react";
 
 type Order = {
     id: string;
@@ -18,24 +18,24 @@ type Order = {
 const STATUS_CONFIG = {
     PENDING: {
         label: "En attente",
-        color: "text-yellow-400",
-        bg: "bg-yellow-400/10",
+        color: "text-warning",
+        bg: "bg-warning/10",
     },
     PROCESSING: {
         label: "En cours",
-        color: "text-blue-400",
-        bg: "bg-blue-400/10",
+        color: "text-info",
+        bg: "bg-info/10",
     },
     COMPLETED: {
         label: "Terminée",
-        color: "text-green-400",
-        bg: "bg-green-400/10",
+        color: "text-success",
+        bg: "bg-success/10",
     },
-    FAILED: { label: "Échouée", color: "text-red-400", bg: "bg-red-400/10" },
+    FAILED: { label: "Échouée", color: "text-destructive", bg: "bg-destructive/10" },
     CANCELLED: {
         label: "Annulée",
-        color: "text-zinc-400",
-        bg: "bg-zinc-400/10",
+        color: "text-muted-foreground",
+        bg: "bg-muted",
     },
 };
 
@@ -53,7 +53,7 @@ export default function OrdersPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-40">
-                <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                <IconRefresh className="w-6 h-6 animate-spin text-primary" />
             </div>
         );
     }
@@ -70,7 +70,7 @@ export default function OrdersPage() {
 
             {orders.length === 0 ? (
                 <FuturisticCard className="p-10 text-center">
-                    <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/20 mb-4" />
+                    <IconShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/20 mb-4" />
                     <p className="text-muted-foreground">
                         Aucune commande pour l&apos;instant.
                     </p>
@@ -87,15 +87,11 @@ export default function OrdersPage() {
                                             <span className="font-bold text-sm">
                                                 {order.serviceName}
                                             </span>
-                                            <span
-                                                className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5"
-                                                style={{ clipPath: CLIP_TR_SM }}
-                                            >
+                                            <span className="text-xs text-muted-foreground bg-muted/50 rounded-full px-2 py-0.5">
                                                 {order.network}
                                             </span>
                                             <span
-                                                className={`text-xs font-medium px-2 py-0.5 ${st.color} ${st.bg}`}
-                                                style={{ clipPath: CLIP_TR_SM }}
+                                                className={`text-xs font-medium rounded-full px-2 py-0.5 ${st.color} ${st.bg}`}
                                             >
                                                 {st.label}
                                             </span>

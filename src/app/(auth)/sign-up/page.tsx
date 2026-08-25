@@ -8,13 +8,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle } from "lucide-react";
 import {
     IconBrandGoogleFilled,
     IconBrandAppleFilled,
     IconMail,
     IconLock,
     IconFingerprint,
+    IconLoader2,
+    IconAlertCircle,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -127,8 +128,8 @@ export default function SignUpPage() {
 
     if (!userLoaded) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-950">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -139,7 +140,7 @@ export default function SignUpPage() {
         return (
             <div className="min-h-screen relative flex items-center justify-center bg-background px-4 overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-20 animate-pulse -z-10" />
-                <div className="bg-white/5 dark:bg-slate-950/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl">
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                             <IconFingerprint className="w-8 h-8 text-primary" />
@@ -180,7 +181,7 @@ export default function SignUpPage() {
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <IconLoader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 "Vérifier le compte"
                             )}
@@ -197,7 +198,7 @@ export default function SignUpPage() {
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-20 animate-pulse -z-10" />
 
             <div className="relative z-10 w-full max-w-md mx-auto">
-                <div className="bg-white/5 dark:bg-slate-950/40 backdrop-blur-xl backdrop-saturate-150 border border-white/10 dark:border-slate-800/30 rounded-3xl p-8 sm:p-10 shadow-2xl">
+                <div className="bg-white/5 backdrop-blur-xl backdrop-saturate-150 border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                             Créer un compte
@@ -209,7 +210,7 @@ export default function SignUpPage() {
 
                     {error && (
                         <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-2xl flex items-start gap-3">
-                            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                            <IconAlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
                             <p className="text-sm text-destructive font-medium">
                                 {error}
                             </p>
@@ -224,7 +225,7 @@ export default function SignUpPage() {
                             className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
                         >
                             {isSocialLoading === "google" ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <IconLoader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <>
                                     <IconBrandGoogleFilled className="mr-2 h-5 w-5" />{" "}
@@ -240,7 +241,7 @@ export default function SignUpPage() {
                             className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
                         >
                             {isSocialLoading === "apple" ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <IconLoader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <>
                                     <IconBrandAppleFilled className="mr-2 h-5 w-5" />{" "}
@@ -303,7 +304,7 @@ export default function SignUpPage() {
                             disabled={isLoading || isSocialLoading !== null}
                         >
                             {isLoading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <IconLoader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 "S'inscrire"
                             )}

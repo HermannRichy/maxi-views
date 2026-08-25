@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
+import { FuturisticCard } from "@/components/ui/futuristic";
 import { NETWORKS } from "@/data/landing";
 import { toast } from "sonner";
-import { ArrowRight, RefreshCw, Wallet } from "lucide-react";
+import { IconArrowRight, IconRefresh, IconWallet } from "@tabler/icons-react";
 
 /* Services par réseau (MVP simplifié) */
 const SERVICES_CATALOG: Record<
@@ -120,13 +120,12 @@ export default function NewOrderPage() {
                         className={`flex items-center gap-1 ${step > i + 1 ? "text-primary" : step === i + 1 ? "text-foreground font-semibold" : ""}`}
                     >
                         <span
-                            className={`w-5 h-5 flex items-center justify-center text-[10px] font-bold ${step > i + 1 ? "bg-primary text-primary-foreground" : step === i + 1 ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
-                            style={{ clipPath: CLIP_TR_SM }}
+                            className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step > i + 1 ? "bg-primary text-primary-foreground" : step === i + 1 ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
                         >
                             {i + 1}
                         </span>
                         {s}
-                        {i < 2 && <ArrowRight className="w-3 h-3 ml-1" />}
+                        {i < 2 && <IconArrowRight className="w-3 h-3 ml-1" />}
                     </span>
                 ))}
             </div>
@@ -144,8 +143,7 @@ export default function NewOrderPage() {
                                     setSelectedService(null);
                                     setStep(2);
                                 }}
-                                className="flex items-center gap-3 p-3 border border-border hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
-                                style={{ clipPath: CLIP_TR_SM }}
+                                className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
                             >
                                 <n.Icon
                                     className="w-6 h-6 shrink-0"
@@ -184,8 +182,7 @@ export default function NewOrderPage() {
                                     setQuantity(s.minQty);
                                     setStep(3);
                                 }}
-                                className="w-full flex items-center justify-between p-3 border border-border hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
-                                style={{ clipPath: CLIP_TR_SM }}
+                                className="w-full flex items-center justify-between p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
                             >
                                 <span className="text-sm font-medium">
                                     {s.name}
@@ -229,8 +226,7 @@ export default function NewOrderPage() {
                                 placeholder="https://tiktok.com/@moncompte"
                                 value={link}
                                 onChange={(e) => setLink(e.target.value)}
-                                className="w-full bg-muted/30 border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                                style={{ clipPath: CLIP_TR_SM }}
+                                className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
                                 required
                             />
                         </div>
@@ -250,16 +246,12 @@ export default function NewOrderPage() {
                                 onChange={(e) =>
                                     setQuantity(Number(e.target.value))
                                 }
-                                className="w-full bg-muted/30 border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                                style={{ clipPath: CLIP_TR_SM }}
+                                className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
                             />
                         </div>
 
                         {/* Price summary */}
-                        <div
-                            className="bg-primary/5 border border-primary/20 p-4"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
+                        <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">
                                     Coût total
@@ -284,25 +276,16 @@ export default function NewOrderPage() {
                                 !link ||
                                 quantity < selectedService.minQty
                             }
-                            className="group relative inline-block w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <div
-                                className="absolute inset-0 bg-primary/30 translate-x-[3px] translate-y-[3px]"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            />
-                            <div
-                                className="relative py-3 bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 group-hover:bg-primary/90 transition-colors"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            >
-                                {loading ? (
-                                    <RefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Wallet className="w-4 h-4" />
-                                )}
-                                {loading
-                                    ? "Traitement..."
-                                    : `Commander — ${amount.toLocaleString("fr-FR")} FCFA`}
-                            </div>
+                            {loading ? (
+                                <IconRefresh className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <IconWallet className="w-4 h-4" />
+                            )}
+                            {loading
+                                ? "Traitement..."
+                                : `Commander — ${amount.toLocaleString("fr-FR")} FCFA`}
                         </button>
                     </div>
                 </FuturisticCard>

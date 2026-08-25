@@ -6,19 +6,17 @@ import {
     IconBrandX,
     IconBrandTelegram,
     IconBrandWhatsapp,
+    IconBolt,
+    IconShield,
+    IconHeadset,
+    IconTrendingUp,
+    IconChartBar,
+    IconWorld,
+    IconUserPlus,
+    IconWallet,
+    IconClick,
+    IconRocket,
 } from "@tabler/icons-react";
-import {
-    Zap,
-    Shield,
-    HeadphonesIcon,
-    TrendingUp,
-    BarChart3,
-    Globe,
-    UserPlus,
-    Wallet,
-    MousePointerClick,
-    Rocket,
-} from "lucide-react";
 
 export const NETWORKS = [
     {
@@ -144,32 +142,32 @@ export const STATS = [
 
 export const WHY_US = [
     {
-        Icon: Zap,
+        Icon: IconBolt,
         title: "Livraison ultra-rapide",
         desc: "Vos commandes commencent dans les minutes qui suivent le paiement. Résultats visibles immédiatement.",
     },
     {
-        Icon: Shield,
+        Icon: IconShield,
         title: "100% sécurisé",
         desc: "Nous n'utilisons jamais vos mots de passe. Nos méthodes sont conformes aux conditions d'utilisation.",
     },
     {
-        Icon: HeadphonesIcon,
+        Icon: IconHeadset,
         title: "Support 24/7",
         desc: "Notre équipe est disponible à tout moment pour répondre à vos questions et résoudre vos problèmes.",
     },
     {
-        Icon: TrendingUp,
+        Icon: IconTrendingUp,
         title: "Croissance garantie",
         desc: "Résultats garantis ou remboursé. Nous nous engageons sur la qualité de chaque livraison.",
     },
     {
-        Icon: BarChart3,
+        Icon: IconChartBar,
         title: "Suivi en temps réel",
         desc: "Suivez l'avancement de vos commandes depuis votre tableau de bord, en direct.",
     },
     {
-        Icon: Globe,
+        Icon: IconWorld,
         title: "Multi-réseaux",
         desc: "Un seul compte pour gérer tous vos réseaux sociaux : TikTok, Instagram, YouTube et bien plus.",
     },
@@ -230,22 +228,22 @@ export const HOW_IT_WORKS = [
     {
         title: "Créez votre compte",
         desc: "Inscrivez-vous gratuitement en quelques secondes avec votre email.",
-        Icon: UserPlus,
+        Icon: IconUserPlus,
     },
     {
         title: "Rechargez votre solde",
         desc: "Ajoutez des fonds via Mobile Money ou carte bancaire.",
-        Icon: Wallet,
+        Icon: IconWallet,
     },
     {
         title: "Choisissez un service",
         desc: "Sélectionnez le réseau et le service qui vous correspond.",
-        Icon: MousePointerClick,
+        Icon: IconClick,
     },
     {
         title: "Profitez des résultats",
         desc: "Votre commande commence immédiatement. Suivez-la en temps réel.",
-        Icon: Rocket,
+        Icon: IconRocket,
     },
 ];
 

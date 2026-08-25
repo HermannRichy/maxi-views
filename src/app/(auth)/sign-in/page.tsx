@@ -8,12 +8,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle } from "lucide-react";
 import {
     IconBrandGoogleFilled,
     IconBrandAppleFilled,
     IconMail,
     IconLock,
+    IconLoader2,
+    IconAlertCircle,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -100,8 +101,8 @@ export default function LoginPage() {
 
     if (!userLoaded) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-950">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -116,7 +117,7 @@ export default function LoginPage() {
 
             {/* Main Container */}
             <div className="relative z-10 w-full max-w-md mx-auto">
-                <div className="bg-white/5 dark:bg-slate-950/40 backdrop-blur-xl backdrop-saturate-150 border border-white/10 dark:border-slate-800/30 rounded-3xl p-8 sm:p-10 shadow-2xl">
+                <div className="bg-white/5 backdrop-blur-xl backdrop-saturate-150 border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                             Connexion
@@ -128,7 +129,7 @@ export default function LoginPage() {
 
                     {error && (
                         <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-2xl flex items-start gap-3">
-                            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                            <IconAlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
                             <p className="text-sm text-destructive font-medium">
                                 {error}
                             </p>
@@ -143,7 +144,7 @@ export default function LoginPage() {
                             className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
                         >
                             {isSocialLoading === "google" ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <IconLoader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <>
                                     <IconBrandGoogleFilled className="mr-2 h-5 w-5" />{" "}
@@ -159,7 +160,7 @@ export default function LoginPage() {
                             className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
                         >
                             {isSocialLoading === "apple" ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <IconLoader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <>
                                     <IconBrandAppleFilled className="mr-2 h-5 w-5" />{" "}
@@ -231,7 +232,7 @@ export default function LoginPage() {
                             disabled={isLoading || isSocialLoading !== null}
                         >
                             {isLoading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <IconLoader2 className="h-5 w-5 animate-spin" />
                             ) : (
                                 "Se connecter"
                             )}

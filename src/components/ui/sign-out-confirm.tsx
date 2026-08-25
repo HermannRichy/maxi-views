@@ -12,7 +12,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useClerk } from "@clerk/nextjs";
-import { LogOut } from "lucide-react";
+import { IconLogout } from "@tabler/icons-react";
 
 interface SignOutConfirmProps {
     className?: string;
@@ -27,7 +27,7 @@ export function SignOutConfirm({ className, children }: SignOutConfirmProps) {
             <AlertDialogTrigger asChild>
                 {children ?? (
                     <button className={className}>
-                        <LogOut className="w-4 h-4" />
+                        <IconLogout className="w-4 h-4" />
                         Se déconnecter
                     </button>
                 )}

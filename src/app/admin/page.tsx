@@ -2,15 +2,15 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
+import { FuturisticCard } from "@/components/ui/futuristic";
 import {
-    Clock,
-    Loader2,
-    CheckCircle2,
-    XCircle,
-    Users,
-    ShoppingCart,
-} from "lucide-react";
+    IconClock,
+    IconLoader2,
+    IconCircleCheck,
+    IconCircleX,
+    IconUsers,
+    IconShoppingCart,
+} from "@tabler/icons-react";
 
 export default async function AdminDashboardPage() {
     // Vérifier que c'est un admin
@@ -37,53 +37,53 @@ export default async function AdminDashboardPage() {
         {
             label: "En attente",
             value: pending,
-            Icon: Clock,
-            color: "text-yellow-400",
-            bg: "bg-yellow-400/10",
+            Icon: IconClock,
+            color: "text-warning",
+            bg: "bg-warning/10",
         },
         {
             label: "En cours",
             value: processing,
-            Icon: Loader2,
-            color: "text-blue-400",
-            bg: "bg-blue-400/10",
+            Icon: IconLoader2,
+            color: "text-info",
+            bg: "bg-info/10",
         },
         {
             label: "Terminées",
             value: completed,
-            Icon: CheckCircle2,
-            color: "text-green-400",
-            bg: "bg-green-400/10",
+            Icon: IconCircleCheck,
+            color: "text-success",
+            bg: "bg-success/10",
         },
         {
             label: "Échouées",
             value: failed,
-            Icon: XCircle,
-            color: "text-red-400",
-            bg: "bg-red-400/10",
+            Icon: IconCircleX,
+            color: "text-destructive",
+            bg: "bg-destructive/10",
         },
         {
             label: "Utilisateurs",
             value: totalUsers,
-            Icon: Users,
+            Icon: IconUsers,
             color: "text-primary",
             bg: "bg-primary/10",
         },
         {
             label: "Total commandes",
             value: totalOrders,
-            Icon: ShoppingCart,
+            Icon: IconShoppingCart,
             color: "text-primary",
             bg: "bg-primary/10",
         },
     ];
 
     const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-        PENDING: { label: "En attente", color: "text-yellow-400" },
-        PROCESSING: { label: "En cours", color: "text-blue-400" },
-        COMPLETED: { label: "Terminée", color: "text-green-400" },
-        FAILED: { label: "Échouée", color: "text-red-400" },
-        CANCELLED: { label: "Annulée", color: "text-zinc-400" },
+        PENDING: { label: "En attente", color: "text-warning" },
+        PROCESSING: { label: "En cours", color: "text-info" },
+        COMPLETED: { label: "Terminée", color: "text-success" },
+        FAILED: { label: "Échouée", color: "text-destructive" },
+        CANCELLED: { label: "Annulée", color: "text-muted-foreground" },
     };
 
     return (
@@ -111,8 +111,7 @@ export default async function AdminDashboardPage() {
                                 </p>
                             </div>
                             <div
-                                className={`w-9 h-9 flex items-center justify-center ${s.color} ${s.bg}`}
-                                style={{ clipPath: CLIP_TR_SM }}
+                                className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.color} ${s.bg}`}
                             >
                                 <s.Icon className="w-4 h-4" />
                             </div>

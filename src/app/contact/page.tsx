@@ -7,40 +7,34 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FuturisticCard, SectionTitle } from "@/components/ui/futuristic";
 import {
-    FuturisticCard,
-    SectionTitle,
-    CornerBracket,
-    CLIP_TR_SM,
-    CLIP_TR_MD,
-} from "@/components/ui/futuristic";
-import {
-    Mail,
-    MessageSquare,
-    Clock,
-    ArrowRight,
-    Send,
-    Zap,
-} from "lucide-react";
+    IconMail,
+    IconMessageCircle,
+    IconClock,
+    IconArrowRight,
+    IconSend,
+    IconBolt,
+} from "@tabler/icons-react";
 
 /* ─────────────────────────────────────────────────────────────────
    Info cards
 ───────────────────────────────────────────────────────────────── */
 const CONTACT_INFO = [
     {
-        Icon: Mail,
+        Icon: IconMail,
         title: "Email",
         value: "support@maxiviews.me",
         desc: "Réponse sous 24h",
     },
     {
-        Icon: MessageSquare,
+        Icon: IconMessageCircle,
         title: "Chat en direct",
         value: "Via le dashboard",
         desc: "Disponible une fois connecté",
     },
     {
-        Icon: Clock,
+        Icon: IconClock,
         title: "Support",
         value: "24h / 7j",
         desc: "Toujours disponible",
@@ -77,144 +71,81 @@ function ContactForm() {
     };
 
     return (
-        <div className="relative">
-            {/* Outer border */}
-            <div
-                className="absolute inset-0 bg-border/40"
-                style={{ clipPath: CLIP_TR_MD }}
-            />
-            <div
-                className="relative bg-card m-[1px] p-8"
-                style={{ clipPath: CLIP_TR_MD }}
-            >
-                {/* Inner corner decorations */}
-                <CornerBracket
-                    size={12}
-                    className="absolute top-3 left-3 text-primary/30"
-                    rotate={0}
-                />
-                <CornerBracket
-                    size={12}
-                    className="absolute top-3 right-3 text-primary/30"
-                    rotate={90}
-                />
-                <CornerBracket
-                    size={12}
-                    className="absolute bottom-3 left-3 text-primary/30"
-                    rotate={270}
-                />
-                <CornerBracket
-                    size={12}
-                    className="absolute bottom-3 right-3 text-primary/30"
-                    rotate={180}
-                />
-
-                <div className="flex items-center gap-2 mb-6">
-                    <div
-                        className="w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    >
-                        <Send className="w-4 h-4" />
-                    </div>
-                    <h3 className="font-bold text-lg">
-                        Envoyez-nous un message
-                    </h3>
+        <FuturisticCard className="p-8">
+            <div className="flex items-center gap-2 mb-6">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                    <IconSend className="w-4 h-4" />
                 </div>
+                <h3 className="font-bold text-lg">
+                    Envoyez-nous un message
+                </h3>
+            </div>
 
-                <form
-                    ref={formRef}
-                    onSubmit={handleSubmit}
-                    className="space-y-5"
-                >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="user_name" className="text-sm">
-                                Nom complet
-                            </Label>
-                            <Input
-                                id="user_name"
-                                name="user_name"
-                                placeholder="Jean Dupont"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="user_email" className="text-sm">
-                                Email
-                            </Label>
-                            <Input
-                                id="user_email"
-                                name="user_email"
-                                type="email"
-                                placeholder="jean@exemple.com"
-                                required
-                            />
-                        </div>
-                    </div>
-
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <Label htmlFor="user_subject" className="text-sm">
-                            Sujet
+                        <Label htmlFor="user_name" className="text-sm">
+                            Nom complet
                         </Label>
                         <Input
-                            id="user_subject"
-                            name="user_subject"
-                            placeholder="En quoi peut-on vous aider ?"
+                            id="user_name"
+                            name="user_name"
+                            placeholder="Jean Dupont"
                             required
                         />
                     </div>
-
                     <div className="space-y-1.5">
-                        <Label htmlFor="message" className="text-sm">
-                            Message
+                        <Label htmlFor="user_email" className="text-sm">
+                            Email
                         </Label>
-                        <Textarea
-                            id="message"
-                            name="message"
-                            placeholder="Décrivez votre demande..."
-                            rows={5}
+                        <Input
+                            id="user_email"
+                            name="user_email"
+                            type="email"
+                            placeholder="jean@exemple.com"
                             required
-                            className="resize-none"
                         />
                     </div>
+                </div>
 
-                    {/* Chamfered submit button */}
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative inline-block disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            <div
-                                className="absolute inset-0 bg-primary/30 translate-x-[3px] translate-y-[3px]"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            />
-                            <div
-                                className="relative px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-2 group-hover:bg-primary/90 transition-colors"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            >
-                                {loading
-                                    ? "Envoi en cours..."
-                                    : "Envoyer le message"}
-                                <ArrowRight className="w-4 h-4" />
-                            </div>
-                            <svg
-                                className="absolute top-0 right-0 text-primary-foreground/40"
-                                width="10"
-                                height="10"
-                                viewBox="0 0 10 10"
-                                fill="none"
-                            >
-                                <path
-                                    d="M 10 0 L 0 10 L 10 10 Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div className="space-y-1.5">
+                    <Label htmlFor="user_subject" className="text-sm">
+                        Sujet
+                    </Label>
+                    <Input
+                        id="user_subject"
+                        name="user_subject"
+                        placeholder="En quoi peut-on vous aider ?"
+                        required
+                    />
+                </div>
+
+                <div className="space-y-1.5">
+                    <Label htmlFor="message" className="text-sm">
+                        Message
+                    </Label>
+                    <Textarea
+                        id="message"
+                        name="message"
+                        placeholder="Décrivez votre demande..."
+                        rows={5}
+                        required
+                        className="resize-none"
+                    />
+                </div>
+
+                <div className="flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                        {loading ? "Envoi en cours..." : "Envoyer le message"}
+                        <IconArrowRight className="w-4 h-4" />
+                    </button>
+                </div>
+            </form>
+        </FuturisticCard>
     );
 }
 
@@ -243,7 +174,7 @@ export default function ContactPage() {
                         href="/"
                         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
                     >
-                        <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                        <IconArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
                         Retour à l&apos;accueil
                     </Link>
                 </div>
@@ -258,10 +189,7 @@ export default function ContactPage() {
                         {CONTACT_INFO.map((info) => (
                             <FuturisticCard key={info.title} className="p-5">
                                 <div className="flex items-start gap-4">
-                                    <div
-                                        className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0"
-                                        style={{ clipPath: CLIP_TR_SM }}
-                                    >
+                                    <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
                                         <info.Icon className="w-5 h-5" />
                                     </div>
                                     <div>
@@ -282,7 +210,7 @@ export default function ContactPage() {
                         {/* Quick tip */}
                         <FuturisticCard className="p-5 bg-primary/5">
                             <div className="flex items-start gap-3">
-                                <Zap className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                <IconBolt className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                                 <div>
                                     <p className="font-semibold text-sm mb-1">
                                         Conseil rapide

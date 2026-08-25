@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FuturisticCard, CLIP_TR_SM } from "@/components/ui/futuristic";
+import { FuturisticCard } from "@/components/ui/futuristic";
 import {
-    Wallet,
-    ArrowUpRight,
-    ArrowDownLeft,
-    RefreshCw,
-    Plus,
-} from "lucide-react";
+    IconWallet,
+    IconArrowUpRight,
+    IconArrowDownLeft,
+    IconRefresh,
+    IconPlus,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 
 type Transaction = {
@@ -74,7 +74,6 @@ export default function WalletPage() {
                 return;
             }
 
-            // Redirection vers le lien sécurisé FedaPay généré par le SDK Backend
             if (data.url) {
                 window.location.href = data.url;
             } else {
@@ -90,7 +89,7 @@ export default function WalletPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-40">
-                <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                <IconRefresh className="w-6 h-6 animate-spin text-primary" />
             </div>
         );
     }
@@ -118,11 +117,8 @@ export default function WalletPage() {
                             </span>
                         </p>
                     </div>
-                    <div
-                        className="w-12 h-12 bg-primary/10 flex items-center justify-center text-primary"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    >
-                        <Wallet className="w-6 h-6" />
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <IconWallet className="w-6 h-6" />
                     </div>
                 </div>
             </FuturisticCard>
@@ -130,7 +126,7 @@ export default function WalletPage() {
             {/* Deposit form */}
             <FuturisticCard className="p-6">
                 <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Plus className="w-5 h-5 text-primary" /> Recharger
+                    <IconPlus className="w-5 h-5 text-primary" /> Recharger
                 </h2>
 
                 {/* Preset amounts */}
@@ -142,8 +138,7 @@ export default function WalletPage() {
                                 setSelectedAmount(a);
                                 setCustomAmount("");
                             }}
-                            className={`py-2 text-sm font-semibold border transition-colors ${selectedAmount === a && !customAmount ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/30 hover:border-primary/50"}`}
-                            style={{ clipPath: CLIP_TR_SM }}
+                            className={`py-2 rounded-xl text-sm font-semibold border transition-colors ${selectedAmount === a && !customAmount ? "border-primary bg-primary/10 text-primary" : "border-white/10 bg-muted/30 hover:border-primary/50"}`}
                         >
                             {a.toLocaleString("fr-FR")} FCFA
                         </button>
@@ -164,31 +159,21 @@ export default function WalletPage() {
                             setCustomAmount(e.target.value);
                             setSelectedAmount(null);
                         }}
-                        className="w-full bg-muted/30 border border-border px-3 py-2 text-sm focus:outline-none focus:border-primary rounded-none"
-                        style={{ clipPath: CLIP_TR_SM }}
+                        className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
                     />
                 </div>
 
                 <button
                     onClick={handleDeposit}
                     disabled={depositing || (!selectedAmount && !customAmount)}
-                    className="group relative inline-block w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <div
-                        className="absolute inset-0 bg-primary/30 translate-x-[3px] translate-y-[3px]"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    />
-                    <div
-                        className="relative py-3 bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 group-hover:bg-primary/90 transition-colors"
-                        style={{ clipPath: CLIP_TR_SM }}
-                    >
-                        {depositing ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Wallet className="w-4 h-4" />
-                        )}
-                        {depositing ? "Chargement..." : "Payer avec FedaPay"}
-                    </div>
+                    {depositing ? (
+                        <IconRefresh className="w-4 h-4 animate-spin" />
+                    ) : (
+                        <IconWallet className="w-4 h-4" />
+                    )}
+                    {depositing ? "Chargement..." : "Payer avec FedaPay"}
                 </button>
 
                 <p className="text-xs text-muted-foreground mt-3 text-center">
@@ -211,13 +196,12 @@ export default function WalletPage() {
                                 className="p-4 flex items-center gap-4"
                             >
                                 <div
-                                    className={`w-8 h-8 flex items-center justify-center shrink-0 ${tx.type === "CREDIT" ? "bg-green-400/10 text-green-400" : "bg-red-400/10 text-red-400"}`}
-                                    style={{ clipPath: CLIP_TR_SM }}
+                                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === "CREDIT" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
                                 >
                                     {tx.type === "CREDIT" ? (
-                                        <ArrowDownLeft className="w-4 h-4" />
+                                        <IconArrowDownLeft className="w-4 h-4" />
                                     ) : (
-                                        <ArrowUpRight className="w-4 h-4" />
+                                        <IconArrowUpRight className="w-4 h-4" />
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -240,13 +224,13 @@ export default function WalletPage() {
                                 </div>
                                 <div className="text-right shrink-0">
                                     <p
-                                        className={`font-bold tabular-nums ${tx.type === "CREDIT" ? "text-green-400" : "text-red-400"}`}
+                                        className={`font-bold tabular-nums ${tx.type === "CREDIT" ? "text-success" : "text-destructive"}`}
                                     >
                                         {tx.type === "CREDIT" ? "+" : "-"}
                                         {tx.amount.toLocaleString("fr-FR")} FCFA
                                     </p>
                                     <p
-                                        className={`text-xs ${tx.status === "COMPLETED" ? "text-green-400" : tx.status === "FAILED" ? "text-red-400" : "text-yellow-400"}`}
+                                        className={`text-xs ${tx.status === "COMPLETED" ? "text-success" : tx.status === "FAILED" ? "text-destructive" : "text-warning"}`}
                                     >
                                         {tx.status === "COMPLETED"
                                             ? "Confirmé"
