@@ -125,22 +125,26 @@ export async function sendVerificationOtpEmail({
     type: OtpType;
 }) {
     if (!resend) return;
-    return resend.emails.send({
-        from: FROM,
-        to: email,
-        subject: OTP_SUBJECTS[type] ?? "Votre code de vérification",
-        html: layout(
-            OTP_SUBJECTS[type] ?? "Code de vérification",
-            `
-            <h2 style="color:#111;margin:0 0 8px">Votre code Maxi Views</h2>
-            <p style="color:#3f3f46;margin:0 0 24px">Utilisez le code ci-dessous pour continuer. Il expire dans 5 minutes.</p>
-            <div style="background:#f0eaff;border:1px solid #d2c2ff;border-radius:8px;padding:24px;margin-bottom:24px;text-align:center">
-                <p style="margin:0;font-size:36px;font-weight:900;letter-spacing:0.3em;color:#5e0eb3">${otp}</p>
-            </div>
-            <p style="color:#71717a;font-size:13px">Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
-        `,
-        ),
-    });
+    try {
+        await resend.emails.send({
+            from: FROM,
+            to: email,
+            subject: OTP_SUBJECTS[type] ?? "Votre code de vérification",
+            html: layout(
+                OTP_SUBJECTS[type] ?? "Code de vérification",
+                `
+                <h2 style="color:#111;margin:0 0 8px">Votre code Maxi Views</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Utilisez le code ci-dessous pour continuer. Il expire dans 5 minutes.</p>
+                <div style="background:#f0eaff;border:1px solid #d2c2ff;border-radius:8px;padding:24px;margin-bottom:24px;text-align:center">
+                    <p style="margin:0;font-size:36px;font-weight:900;letter-spacing:0.3em;color:#5e0eb3">${otp}</p>
+                </div>
+                <p style="color:#71717a;font-size:13px">Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+            `,
+            ),
+        });
+    } catch (error) {
+        console.error("Erreur d'envoi email OTP:", error);
+    }
 }
 
 /** 0b. Nouveau message de contact → admin */
@@ -156,24 +160,28 @@ export async function sendContactMessage({
     message: string;
 }) {
     if (!resend) return;
-    return resend.emails.send({
-        from: FROM,
-        to: ADMIN_EMAIL,
-        replyTo: email,
-        subject: `📨 Contact — ${subject}`,
-        html: layout(
-            "Nouveau message de contact",
-            `
-            <h2 style="color:#111;margin:0 0 8px">Nouveau message</h2>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Nom</td><td style="font-weight:700">${name}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Email</td><td>${email}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Sujet</td><td>${subject}</td></tr>
-            </table>
-            <p style="margin-top:24px;color:#3f3f46;white-space:pre-wrap">${message}</p>
-        `,
-        ),
-    });
+    try {
+        await resend.emails.send({
+            from: FROM,
+            to: ADMIN_EMAIL,
+            replyTo: email,
+            subject: `📨 Contact — ${subject}`,
+            html: layout(
+                "Nouveau message de contact",
+                `
+                <h2 style="color:#111;margin:0 0 8px">Nouveau message</h2>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Nom</td><td style="font-weight:700">${name}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Email</td><td>${email}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Sujet</td><td>${subject}</td></tr>
+                </table>
+                <p style="margin-top:24px;color:#3f3f46;white-space:pre-wrap">${message}</p>
+            `,
+            ),
+        });
+    } catch (error) {
+        console.error("Erreur d'envoi email de contact:", error);
+    }
 }
 
 /** 1. Dépôt confirmé → user */
@@ -184,24 +192,28 @@ export async function sendDepositConfirmed({
     newBalance,
 }: DepositConfirmedProps) {
     if (!resend) return;
-    return resend.emails.send({
-        from: FROM,
-        to,
-        subject: `✅ Rechargement de ${fcfa(amount)} confirmé — Maxi Views`,
-        html: layout(
-            "Rechargement confirmé",
-            `
-            <h2 style="color:#111;margin:0 0 8px">Bonjour ${name} 👋</h2>
-            <p style="color:#3f3f46;margin:0 0 24px">Votre rechargement a bien été pris en compte.</p>
-            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px 24px;margin-bottom:24px">
-                <p style="margin:0;color:#15803d;font-size:14px">Montant crédité</p>
-                <p style="margin:4px 0 0;font-size:28px;font-weight:900;color:#15803d">${fcfa(amount)}</p>
-            </div>
-            <p style="color:#3f3f46;font-size:14px">Votre solde actuel : <strong>${fcfa(newBalance)}</strong></p>
-            ${button(`${APP_URL}/dashboard/new-order`, "Commander un service")}
-        `,
-        ),
-    });
+    try {
+        await resend.emails.send({
+            from: FROM,
+            to,
+            subject: `✅ Rechargement de ${fcfa(amount)} confirmé — Maxi Views`,
+            html: layout(
+                "Rechargement confirmé",
+                `
+                <h2 style="color:#111;margin:0 0 8px">Bonjour ${name} 👋</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Votre rechargement a bien été pris en compte.</p>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px 24px;margin-bottom:24px">
+                    <p style="margin:0;color:#15803d;font-size:14px">Montant crédité</p>
+                    <p style="margin:4px 0 0;font-size:28px;font-weight:900;color:#15803d">${fcfa(amount)}</p>
+                </div>
+                <p style="color:#3f3f46;font-size:14px">Votre solde actuel : <strong>${fcfa(newBalance)}</strong></p>
+                ${button(`${APP_URL}/dashboard/new-order`, "Commander un service")}
+            `,
+            ),
+        });
+    } catch (error) {
+        console.error("Erreur d'envoi email de dépôt confirmé:", error);
+    }
 }
 
 /** 2. Nouvelle commande → user */
@@ -215,26 +227,30 @@ export async function sendOrderCreatedUser({
     amount,
 }: OrderCreatedUserProps) {
     if (!resend) return;
-    return resend.emails.send({
-        from: FROM,
-        to,
-        subject: `🛒 Commande #${orderId.slice(-8).toUpperCase()} reçue — Maxi Views`,
-        html: layout(
-            "Commande reçue",
-            `
-            <h2 style="color:#111;margin:0 0 8px">Bonjour ${name} 👋</h2>
-            <p style="color:#3f3f46;margin:0 0 24px">Votre commande a bien été enregistrée et est en attente de traitement.</p>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Référence</td><td style="font-weight:700">#${orderId.slice(-8).toUpperCase()}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Réseau</td><td>${network}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Service</td><td>${serviceName}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Quantité</td><td>${quantity.toLocaleString("fr-FR")}</td></tr>
-                <tr><td style="padding:8px 0">Montant débité</td><td style="font-weight:700;color:#9542ff">${fcfa(amount)}</td></tr>
-            </table>
-            ${button(`${APP_URL}/dashboard/orders`, "Suivre ma commande")}
-        `,
-        ),
-    });
+    try {
+        await resend.emails.send({
+            from: FROM,
+            to,
+            subject: `🛒 Commande #${orderId.slice(-8).toUpperCase()} reçue — Maxi Views`,
+            html: layout(
+                "Commande reçue",
+                `
+                <h2 style="color:#111;margin:0 0 8px">Bonjour ${name} 👋</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Votre commande a bien été enregistrée et est en attente de traitement.</p>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Référence</td><td style="font-weight:700">#${orderId.slice(-8).toUpperCase()}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Réseau</td><td>${network}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Service</td><td>${serviceName}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Quantité</td><td>${quantity.toLocaleString("fr-FR")}</td></tr>
+                    <tr><td style="padding:8px 0">Montant débité</td><td style="font-weight:700;color:#9542ff">${fcfa(amount)}</td></tr>
+                </table>
+                ${button(`${APP_URL}/dashboard/orders`, "Suivre ma commande")}
+            `,
+            ),
+        });
+    } catch (error) {
+        console.error("Erreur d'envoi email de commande (user):", error);
+    }
 }
 
 /** 3. Nouvelle commande → admin */
@@ -249,28 +265,32 @@ export async function sendOrderCreatedAdmin({
     link,
 }: OrderCreatedAdminProps) {
     if (!resend) return;
-    return resend.emails.send({
-        from: FROM,
-        to: ADMIN_EMAIL,
-        subject: `🔔 Nouvelle commande #${orderId.slice(-8).toUpperCase()} — ${network} / ${serviceName}`,
-        html: layout(
-            "Nouvelle commande",
-            `
-            <h2 style="color:#111;margin:0 0 8px">Nouvelle commande reçue</h2>
-            <p style="color:#3f3f46;margin:0 0 24px">Un utilisateur vient de passer une commande.</p>
-            <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Référence</td><td style="font-weight:700">#${orderId.slice(-8).toUpperCase()}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Utilisateur</td><td>${userName} (${userEmail})</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Réseau</td><td>${network}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Service</td><td>${serviceName}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Quantité</td><td>${quantity.toLocaleString("fr-FR")}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Lien / cible</td><td><a href="${link}">${link}</a></td></tr>
-                <tr><td style="padding:8px 0">Montant</td><td style="font-weight:700;color:#2563eb">${fcfa(amount)}</td></tr>
-            </table>
-            ${button(`${APP_URL}/admin/orders`, "Gérer les commandes")}
-        `,
-        ),
-    });
+    try {
+        await resend.emails.send({
+            from: FROM,
+            to: ADMIN_EMAIL,
+            subject: `🔔 Nouvelle commande #${orderId.slice(-8).toUpperCase()} — ${network} / ${serviceName}`,
+            html: layout(
+                "Nouvelle commande",
+                `
+                <h2 style="color:#111;margin:0 0 8px">Nouvelle commande reçue</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Un utilisateur vient de passer une commande.</p>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Référence</td><td style="font-weight:700">#${orderId.slice(-8).toUpperCase()}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Utilisateur</td><td>${userName} (${userEmail})</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Réseau</td><td>${network}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Service</td><td>${serviceName}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Quantité</td><td>${quantity.toLocaleString("fr-FR")}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Lien / cible</td><td><a href="${link}">${link}</a></td></tr>
+                    <tr><td style="padding:8px 0">Montant</td><td style="font-weight:700;color:#9542ff">${fcfa(amount)}</td></tr>
+                </table>
+                ${button(`${APP_URL}/admin/orders`, "Gérer les commandes")}
+            `,
+            ),
+        });
+    } catch (error) {
+        console.error("Erreur d'envoi email de commande (admin):", error);
+    }
 }
 
 /** 4. Statut commande modifié → user */
@@ -292,23 +312,27 @@ export async function sendOrderStatusChanged({
               : status === "PROCESSING"
                 ? "⚙️"
                 : "ℹ️";
-    return resend.emails.send({
-        from: FROM,
-        to,
-        subject: `${emoji} Commande #${orderId.slice(-8).toUpperCase()} — ${label}`,
-        html: layout(
-            `Statut : ${label}`,
-            `
-            <h2 style="color:#111;margin:0 0 8px">Bonjour ${name} 👋</h2>
-            <p style="color:#3f3f46;margin:0 0 24px">Le statut de votre commande <strong>#${orderId.slice(-8).toUpperCase()}</strong> a été mis à jour.</p>
-            <div style="background:#f0eaff;border:1px solid #d2c2ff;border-radius:8px;padding:20px 24px;margin-bottom:24px">
-                <p style="margin:0;color:#5e0eb3;font-size:14px">Nouveau statut</p>
-                <p style="margin:4px 0 0;font-size:22px;font-weight:900;color:#5e0eb3">${emoji} ${label}</p>
-            </div>
-            <p style="color:#3f3f46;font-size:14px">Service : <strong>${serviceName}</strong></p>
-            ${adminNote ? `<p style="color:#71717a;font-size:13px;background:#f4f4f5;border-radius:6px;padding:12px">Note : ${adminNote}</p>` : ""}
-            ${button(`${APP_URL}/dashboard/orders`, "Voir mes commandes")}
-        `,
-        ),
-    });
+    try {
+        await resend.emails.send({
+            from: FROM,
+            to,
+            subject: `${emoji} Commande #${orderId.slice(-8).toUpperCase()} — ${label}`,
+            html: layout(
+                `Statut : ${label}`,
+                `
+                <h2 style="color:#111;margin:0 0 8px">Bonjour ${name} 👋</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Le statut de votre commande <strong>#${orderId.slice(-8).toUpperCase()}</strong> a été mis à jour.</p>
+                <div style="background:#f0eaff;border:1px solid #d2c2ff;border-radius:8px;padding:20px 24px;margin-bottom:24px">
+                    <p style="margin:0;color:#5e0eb3;font-size:14px">Nouveau statut</p>
+                    <p style="margin:4px 0 0;font-size:22px;font-weight:900;color:#5e0eb3">${emoji} ${label}</p>
+                </div>
+                <p style="color:#3f3f46;font-size:14px">Service : <strong>${serviceName}</strong></p>
+                ${adminNote ? `<p style="color:#71717a;font-size:13px;background:#f4f4f5;border-radius:6px;padding:12px">Note : ${adminNote}</p>` : ""}
+                ${button(`${APP_URL}/dashboard/orders`, "Voir mes commandes")}
+            `,
+            ),
+        });
+    } catch (error) {
+        console.error("Erreur d'envoi email de changement de statut:", error);
+    }
 }
