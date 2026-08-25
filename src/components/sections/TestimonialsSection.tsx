@@ -61,9 +61,9 @@ export default function TestimonialsSection() {
                     {TESTIMONIALS.map((t) => (
                         <FuturisticCard
                             key={t.name}
-                            className="relative p-6 w-[85vw] sm:w-96 shrink-0"
+                            className="relative p-6 w-[85vw] sm:w-96 shrink-0 overflow-hidden"
                         >
-                            <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-primary" />
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
 
                             <div className="flex mb-4">
                                 {Array.from({ length: t.stars }).map((_, i) => (

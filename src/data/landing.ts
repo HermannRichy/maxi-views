@@ -202,6 +202,27 @@ export const FAQ = [
 
 export const TESTIMONIALS = [
     {
+        name: "Morille Femi",
+        role: "Créatrice de contenu",
+        network: "TikTok",
+        stars: 5,
+        text: "Livraison ultra rapide et solde toujours disponible. Maxi Views est devenu mon réflexe avant chaque publication importante.",
+    },
+    {
+        name: "Freddy Alavo",
+        role: "Community manager",
+        network: "Instagram",
+        stars: 5,
+        text: "Je gère plusieurs comptes clients et Maxi Views me fait gagner un temps fou. Simple, fiable, et le support répond vite.",
+    },
+    {
+        name: "Chimène Houngbédji",
+        role: "Entrepreneuse",
+        network: "Facebook",
+        stars: 5,
+        text: "Ma page boutique a enfin décollé. Les vues et les likes ont attiré de vrais clients, pas juste des chiffres.",
+    },
+    {
         name: "Kofi A.",
         role: "Créateur de contenu",
         network: "TikTok",

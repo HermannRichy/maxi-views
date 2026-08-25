@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { IconEyeShare, IconMenu2, IconX, IconArrowRight } from "@tabler/icons-react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import {
+    IconEyeShare,
+    IconMenu,
+    IconX,
+    IconArrowRight,
+} from "@tabler/icons-react";
 import { SectionBorder } from "@/components/ui/futuristic";
 
 /* ─────────────────────────────────────────────────────────────────
@@ -79,6 +86,28 @@ function FuturisticCta({
    Mobile Drawer
 ───────────────────────────────────────────────────────────────── */
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            if (!open) return;
+            gsap.fromTo(
+                "[data-menu-item]",
+                { autoAlpha: 0, x: 24 },
+                {
+                    autoAlpha: 1,
+                    x: 0,
+                    duration: 0.5,
+                    stagger: 0.06,
+                    ease: "power3.out",
+                    delay: 0.15,
+                    overwrite: true,
+                },
+            );
+        },
+        { dependencies: [open], scope: panelRef },
+    );
+
     return (
         <>
             {/* Backdrop */}
@@ -89,6 +118,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
             {/* Drawer panel */}
             <div
+                ref={panelRef}
                 className={`fixed top-0 right-0 z-50 h-full w-72 bg-background border-l border-white/10 transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}
             >
                 {/* Header row */}
@@ -112,7 +142,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
                 {/* Nav links */}
                 <nav className="px-6 py-6 flex flex-col gap-1 border-b border-white/10">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3 font-medium">
+                    <p data-menu-item className="text-xs text-muted-foreground uppercase tracking-widest mb-3 font-medium">
                         Navigation
                     </p>
                     {NAV_LINKS.map((item) => (
@@ -120,6 +150,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                             key={item.label}
                             href={item.href}
                             onClick={onClose}
+                            data-menu-item
                             className="flex items-center gap-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
                         >
                             <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
@@ -131,33 +162,39 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
                 {/* CTA area */}
                 <div className="px-6 py-6 flex flex-col gap-3">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1 font-medium">
+                    <p data-menu-item className="text-xs text-muted-foreground uppercase tracking-widest mb-1 font-medium">
                         Compte
                     </p>
                     <SignedOut>
-                        <FuturisticCta
-                            href="/sign-in"
-                            variant="ghost"
-                            onClick={onClose}
-                        >
-                            Se connecter
-                        </FuturisticCta>
-                        <FuturisticCta
-                            href="/sign-up"
-                            variant="primary"
-                            onClick={onClose}
-                        >
-                            Commencer
-                        </FuturisticCta>
+                        <div data-menu-item>
+                            <FuturisticCta
+                                href="/sign-in"
+                                variant="ghost"
+                                onClick={onClose}
+                            >
+                                Se connecter
+                            </FuturisticCta>
+                        </div>
+                        <div data-menu-item>
+                            <FuturisticCta
+                                href="/sign-up"
+                                variant="primary"
+                                onClick={onClose}
+                            >
+                                Commencer
+                            </FuturisticCta>
+                        </div>
                     </SignedOut>
                     <SignedIn>
-                        <FuturisticCta
-                            href="/dashboard"
-                            variant="primary"
-                            onClick={onClose}
-                        >
-                            Dashboard
-                        </FuturisticCta>
+                        <div data-menu-item>
+                            <FuturisticCta
+                                href="/dashboard"
+                                variant="primary"
+                                onClick={onClose}
+                            >
+                                Dashboard
+                            </FuturisticCta>
+                        </div>
                     </SignedIn>
                 </div>
             </div>
@@ -217,7 +254,7 @@ export default function Header() {
                         className="lg:hidden w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
                         aria-label="Ouvrir le menu"
                     >
-                        <IconMenu2 className="w-5 h-5" />
+                        <IconMenu className="w-5 h-5" />
                     </button>
                 </div>
 

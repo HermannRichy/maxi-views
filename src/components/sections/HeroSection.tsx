@@ -114,7 +114,7 @@ export default function HeroSection() {
 
                     <h1
                         ref={titleRef}
-                        className="font-display text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] mb-6"
+                        className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.1] mb-6 pb-1"
                         style={{ visibility: "hidden" }}
                     >
                         Boostez votre <span className="text-primary">présence</span>{" "}

@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { IconEyeShare, IconCircleCheck } from "@tabler/icons-react";
-import { SectionBorder } from "@/components/ui/futuristic";
+import { IconEyeShare, IconCircleCheck, IconArrowUpRight } from "@tabler/icons-react";
+import { SectionBorder, GeoCircle } from "@/components/ui/futuristic";
 import { FOOTER_SOCIAL_ICONS, FOOTER_LINKS } from "@/data/landing";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const FOOTER_SERVICES = [
     "TikTok",
@@ -12,12 +15,32 @@ const FOOTER_SERVICES = [
 ];
 
 export default function Footer() {
+    const sectionRef = useScrollReveal<HTMLElement>();
+
     return (
-        <footer className="pt-2">
+        <footer ref={sectionRef} className="relative overflow-hidden pt-2">
+            <GeoCircle className="-top-32 right-[10%] opacity-10 -z-10" size={360} />
             <SectionBorder />
 
+            {/* Big CTA statement */}
+            <div data-reveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-b border-white/10">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                    <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] max-w-2xl">
+                        Prêt à faire décoller{" "}
+                        <span className="text-primary">votre audience ?</span>
+                    </h2>
+                    <Link
+                        href="/sign-up"
+                        className="group inline-flex items-center gap-3 shrink-0 rounded-full bg-primary text-primary-foreground px-8 py-4 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl transition-all w-fit"
+                    >
+                        Créer un compte gratuit
+                        <IconArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </Link>
+                </div>
+            </div>
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div data-reveal className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                     {/* Brand */}
                     <div className="md:col-span-2">
                         <div className="flex items-center gap-2 mb-4">
@@ -52,20 +75,15 @@ export default function Footer() {
 
                     {/* Services */}
                     <div>
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-1 h-4 rounded-full bg-primary" />
-                            <h4 className="font-semibold text-sm">Services</h4>
-                        </div>
+                        <h4 className="font-semibold text-sm mb-4 text-foreground/90 uppercase tracking-widest">
+                            Services
+                        </h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             {FOOTER_SERVICES.map((n) => (
-                                <li
-                                    key={n}
-                                    className="flex items-center gap-2 group/link"
-                                >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover/link:bg-primary transition-colors" />
+                                <li key={n}>
                                     <Link
                                         href="/dashboard/new-order"
-                                        className="hover:text-foreground transition-colors"
+                                        className="hover:text-primary transition-colors"
                                     >
                                         {n}
                                     </Link>
@@ -76,22 +94,15 @@ export default function Footer() {
 
                     {/* Liens utiles */}
                     <div>
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-1 h-4 rounded-full bg-primary" />
-                            <h4 className="font-semibold text-sm">
-                                Liens utiles
-                            </h4>
-                        </div>
+                        <h4 className="font-semibold text-sm mb-4 text-foreground/90 uppercase tracking-widest">
+                            Liens utiles
+                        </h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             {FOOTER_LINKS.map((l) => (
-                                <li
-                                    key={l.label}
-                                    className="flex items-center gap-2 group/link"
-                                >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover/link:bg-primary transition-colors" />
+                                <li key={l.label}>
                                     <Link
                                         href={l.href}
-                                        className="hover:text-foreground transition-colors"
+                                        className="hover:text-primary transition-colors"
                                     >
                                         {l.label}
                                     </Link>
