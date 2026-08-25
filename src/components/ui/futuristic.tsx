@@ -1,125 +1,55 @@
 import React from "react";
 
 /* ────────────────────────────────────────────────────────────────────
-   CLIP-PATH CONSTANTS
+   LEGACY CLIP-PATH CONSTANTS (deprecated)
+   Kept as no-op empty strings so any remaining `style={{ clipPath: ... }}`
+   call site silently renders without a clip instead of breaking. Clean
+   these call sites up opportunistically as each file is revisited.
    ──────────────────────────────────────────────────────────────────── */
-/** Chamfer size in px */
-const C = {
-    sm: 8,
-    md: 12,
-    lg: 18,
-};
-
-const poly = (tl: number, tr: number, br: number, bl: number) =>
-    `polygon(
-    ${tl}px 0,
-    calc(100% - ${tr}px) 0,
-    100% ${tr}px,
-    100% calc(100% - ${br}px),
-    calc(100% - ${br}px) 100%,
-    ${bl}px 100%,
-    0 calc(100% - ${bl}px),
-    0 ${tl}px
-  )`;
-
-/** Top-right chamfer only */
-export const CLIP_TR_SM = poly(0, C.sm, 0, 0);
-export const CLIP_TR_MD = poly(0, C.md, 0, 0);
-export const CLIP_TR_LG = poly(0, C.lg, 0, 0);
-
-/** Top-right + bottom-left double chamfer */
-export const CLIP_DUAL_SM = poly(0, C.sm, 0, C.sm);
-export const CLIP_DUAL_MD = poly(0, C.md, 0, C.md);
-export const CLIP_DUAL_LG = poly(0, C.lg, 0, C.lg);
-
-/** All four corners chamfered */
-export const CLIP_ALL_SM = poly(C.sm, C.sm, C.sm, C.sm);
-export const CLIP_ALL_MD = poly(C.md, C.md, C.md, C.md);
+export const CLIP_TR_SM = "";
+export const CLIP_TR_MD = "";
+export const CLIP_TR_LG = "";
+export const CLIP_DUAL_SM = "";
+export const CLIP_DUAL_MD = "";
+export const CLIP_DUAL_LG = "";
+export const CLIP_ALL_SM = "";
+export const CLIP_ALL_MD = "";
 
 /* ────────────────────────────────────────────────────────────────────
-   CORNER BRACKET SVG
+   CORNER BRACKET (deprecated — renders nothing)
    ──────────────────────────────────────────────────────────────────── */
 interface CornerBracketProps {
     size?: number;
     thickness?: number;
     className?: string;
-    /** rotate: tl=0, tr=90, br=180, bl=270 */
     rotate?: 0 | 90 | 180 | 270;
 }
 
-export function CornerBracket({
-    size = 8,
-    thickness = 1.5,
-    className = "",
-    rotate = 0,
-}: CornerBracketProps) {
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox={`0 0 ${size} ${size}`}
-            fill="none"
-            className={className}
-            style={{ transform: `rotate(${rotate}deg)` }}
-        >
-            <path
-                d={`M ${size} ${thickness / 2} H ${thickness / 2} V ${size}`}
-                stroke="currentColor"
-                strokeWidth={thickness}
-            />
-        </svg>
-    );
-}
+export const CornerBracket: React.FC<CornerBracketProps> = () => null;
 
 /* ────────────────────────────────────────────────────────────────────
-   FUTURISTIC CARD
+   FUTURISTIC CARD → now a soft rounded glass/glow card
    ──────────────────────────────────────────────────────────────────── */
 interface FuturisticCardProps {
     children: React.ReactNode;
     className?: string;
+    /** @deprecated no longer used — kept for call-site compatibility */
     clip?: string;
-    /** Show corner brackets */
+    /** @deprecated no longer used — kept for call-site compatibility */
     brackets?: boolean;
+    /** @deprecated no longer used — kept for call-site compatibility */
     bracketSize?: number;
 }
 
 export function FuturisticCard({
     children,
     className = "",
-    clip = CLIP_TR_MD,
-    brackets = true,
-    bracketSize = 9,
 }: FuturisticCardProps) {
     return (
-        <div className="relative group">
-            {/* 1-px border layer */}
-            <div
-                className="absolute inset-0 bg-border/40 group-hover:bg-primary/20 transition-colors duration-300"
-                style={{ clipPath: clip }}
-            />
-            {/* Content layer */}
-            <div
-                className={`relative bg-card group-hover:bg-accent/50 transition-colors duration-300 m-[1px] ${className}`}
-                style={{ clipPath: clip }}
-            >
-                {children}
-            </div>
-
-            {/* Corner brackets */}
-            {brackets && (
-                <>
-                    <CornerBracket
-                        size={bracketSize}
-                        className="absolute top-1 left-1 text-primary/30 group-hover:text-primary/60 transition-colors"
-                        rotate={0}
-                    />
-                    <CornerBracket
-                        size={bracketSize}
-                        className="absolute bottom-1 right-1 text-primary/30 group-hover:text-primary/60 transition-colors"
-                        rotate={180}
-                    />
-                </>
-            )}
+        <div
+            className={`rounded-2xl border border-white/10 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_40px_-12px_var(--primary)] ${className}`}
+        >
+            {children}
         </div>
     );
 }
@@ -143,7 +73,7 @@ export function SectionTitle({
             {/* Top decorator */}
             <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/60" />
-                <div className="w-1.5 h-1.5 bg-primary rotate-45" />
+                <div className="w-2 h-2 rounded-full bg-primary blur-[1px]" />
                 <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/60" />
             </div>
             <h2 className="font-display text-4xl sm:text-5xl font-black mb-4">
@@ -159,20 +89,77 @@ export function SectionTitle({
 }
 
 /* ────────────────────────────────────────────────────────────────────
-   SECTION BORDER (top/bottom decorative line with notch)
+   SECTION BORDER (soft gradient divider)
    ──────────────────────────────────────────────────────────────────── */
 export function SectionBorder({ className = "" }: { className?: string }) {
     return (
-        <div className={`flex items-center h-px ${className}`}>
-            <div className="flex-1 bg-border/40" />
-            <div className="flex items-center gap-1 px-3">
-                <div className="w-1 h-1 bg-primary/30 rotate-45" />
-                <div className="w-3 h-px bg-primary/20" />
-                <div className="w-1 h-1 bg-primary/60 rotate-45" />
-                <div className="w-3 h-px bg-primary/20" />
-                <div className="w-1 h-1 bg-primary/30 rotate-45" />
-            </div>
-            <div className="flex-1 bg-border/40" />
-        </div>
+        <div
+            className={`h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent ${className}`}
+        />
+    );
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   DECORATIVE PRIMITIVES — soft violet glow blobs, dot-grid backdrop
+   and doodle accents used across sections/pages.
+   ──────────────────────────────────────────────────────────────────── */
+interface GlowOrbProps {
+    className?: string;
+    size?: number;
+    blur?: number;
+}
+
+/** Soft blurred violet glow orb, absolutely positioned by the caller via className. */
+export function GlowOrb({ className = "", size = 500, blur = 120 }: GlowOrbProps) {
+    return (
+        <div
+            className={`absolute rounded-full bg-primary/10 pointer-events-none ${className}`}
+            style={{ width: size, height: size, filter: `blur(${blur}px)` }}
+        />
+    );
+}
+
+/** Subtle grid-line backdrop, absolutely positioned by the caller via className. */
+export function GridBackdrop({ className = "" }: { className?: string }) {
+    return (
+        <div
+            className={`absolute inset-0 opacity-[0.03] pointer-events-none ${className}`}
+            style={{
+                backgroundImage:
+                    "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+                backgroundSize: "60px 60px",
+            }}
+        />
+    );
+}
+
+/** Faint hand-drawn-style wavy line accent, in soft violet. */
+export function Doodle({ className = "" }: { className?: string }) {
+    return (
+        <svg
+            className={`pointer-events-none ${className}`}
+            width="120"
+            height="60"
+            viewBox="0 0 120 60"
+            fill="none"
+        >
+            <path
+                d="M0,40 Q20,10 40,40 T80,40 T120,40"
+                stroke="var(--primary)"
+                strokeOpacity="0.18"
+                strokeWidth="2"
+                fill="none"
+            />
+        </svg>
+    );
+}
+
+/** Soft outlined ring, a subtle nod to geometric cut-out shapes. */
+export function RingOutline({ className = "", size = 200 }: { className?: string; size?: number }) {
+    return (
+        <div
+            className={`absolute rounded-full border border-primary/10 pointer-events-none ${className}`}
+            style={{ width: size, height: size }}
+        />
     );
 }
