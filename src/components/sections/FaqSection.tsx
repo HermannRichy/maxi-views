@@ -6,13 +6,14 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { SectionTitle, SectionBorder, GlowOrb } from "@/components/ui/futuristic";
+import { SectionTitle, SectionBorder, GeoRing } from "@/components/ui/futuristic";
 import { FAQ } from "@/data/landing";
 
 export default function FaqSection() {
     return (
         <section id="faq" className="relative overflow-hidden py-24 bg-muted/20">
-            <GlowOrb className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10" size={450} blur={110} />
+            <GeoRing className="-top-10 right-[8%] opacity-40 -z-10" size={180} />
+            <GeoRing className="-bottom-10 left-[8%] opacity-30 -z-10" size={140} />
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                 <SectionTitle subtitle="Vous avez une question ? La réponse est peut-être ici.">
                     Questions <span className="text-primary">fréquentes</span>

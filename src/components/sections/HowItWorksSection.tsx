@@ -1,10 +1,11 @@
-import { SectionTitle, SectionBorder, GlowOrb } from "@/components/ui/futuristic";
+import { SectionTitle, SectionBorder, GeoRing } from "@/components/ui/futuristic";
 import { HOW_IT_WORKS } from "@/data/landing";
 
 export default function HowItWorksSection() {
     return (
         <section className="relative overflow-hidden py-24">
-            <GlowOrb className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10" size={500} blur={100} />
+            <GeoRing className="-top-16 right-[15%] opacity-40 -z-10" size={200} />
+            <GeoRing className="-bottom-16 left-[10%] opacity-30 -z-10" size={160} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                 <SectionTitle subtitle="En 4 étapes simples, votre présence en ligne décolle.">
                     Comment ça{" "}

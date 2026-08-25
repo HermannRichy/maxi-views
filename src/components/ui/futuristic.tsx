@@ -163,3 +163,43 @@ export function RingOutline({ className = "", size = 200 }: { className?: string
         />
     );
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   BOLD GEOMETRIC SHAPES — high-contrast circles/rings/squares used as
+   loud poster-style decoration (moodboard-inspired), unlike the soft
+   translucent glows above. These are meant to be clearly visible.
+   ──────────────────────────────────────────────────────────────────── */
+interface GeoShapeProps {
+    className?: string;
+    size?: number;
+}
+
+/** Solid filled circle in the primary color — fully opaque, crisp edge. */
+export function GeoCircle({ className = "", size = 300 }: GeoShapeProps) {
+    return (
+        <div
+            className={`absolute rounded-full bg-primary pointer-events-none ${className}`}
+            style={{ width: size, height: size }}
+        />
+    );
+}
+
+/** Bold outlined ring — thick stroke, high opacity, reads clearly against dark bg. */
+export function GeoRing({ className = "", size = 220 }: GeoShapeProps) {
+    return (
+        <div
+            className={`absolute rounded-full border-[3px] border-primary pointer-events-none ${className}`}
+            style={{ width: size, height: size }}
+        />
+    );
+}
+
+/** Solid rotated square/diamond accent. */
+export function GeoSquare({ className = "", size = 60 }: GeoShapeProps) {
+    return (
+        <div
+            className={`absolute bg-primary pointer-events-none ${className}`}
+            style={{ width: size, height: size }}
+        />
+    );
+}

@@ -1,11 +1,11 @@
-import { FuturisticCard, SectionTitle, SectionBorder, RingOutline } from "@/components/ui/futuristic";
+import { FuturisticCard, SectionTitle, SectionBorder, GeoRing, GeoCircle } from "@/components/ui/futuristic";
 import { WHY_US } from "@/data/landing";
 
 export default function WhyUsSection() {
     return (
         <section id="pourquoi" className="relative overflow-hidden py-24 bg-muted/20">
-            <RingOutline className="-top-16 right-[8%]" size={180} />
-            <RingOutline className="bottom-0 left-[5%]" size={120} />
+            <GeoRing className="-top-16 -right-16 opacity-50" size={220} />
+            <GeoCircle className="-bottom-20 -left-20 opacity-20" size={240} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                 <SectionTitle subtitle="Fiabilité, vitesse et qualité — tout ce dont vous avez besoin pour grandir en ligne.">
                     Pourquoi choisir{" "}

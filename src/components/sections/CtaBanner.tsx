@@ -1,22 +1,17 @@
 import Link from "next/link";
-import { GlowOrb } from "@/components/ui/futuristic";
+import { GeoCircle, GeoRing } from "@/components/ui/futuristic";
 import { IconLock, IconArrowRight } from "@tabler/icons-react";
 
 export default function CtaBanner() {
     return (
         <section className="py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative rounded-3xl border border-white/10 bg-primary/5 p-12 text-center overflow-hidden">
-                    {/* Glow */}
-                    <div className="absolute inset-0 -z-10">
-                        <GlowOrb
-                            className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                            size={600}
-                            blur={80}
-                        />
-                    </div>
+                <div className="relative rounded-3xl border border-white/10 bg-card p-12 text-center overflow-hidden">
+                    {/* Bold geometric corner shapes */}
+                    <GeoCircle className="-top-24 -right-24 opacity-90" size={320} />
+                    <GeoRing className="-bottom-16 -left-16 opacity-60" size={220} />
 
-                    <div className="w-14 h-14 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary mx-auto mb-6">
+                    <div className="relative w-14 h-14 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary mx-auto mb-6">
                         <IconLock className="w-6 h-6" />
                     </div>
 
