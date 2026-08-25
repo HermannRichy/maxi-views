@@ -11,6 +11,11 @@ export const auth = betterAuth({
     baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
     secret: process.env.BETTER_AUTH_SECRET!,
 
+    // Le domaine apex redirige vers www (ou inversement) au niveau de
+    // l'hébergeur : ces deux variantes doivent donc rester acceptées ici,
+    // même si NEXT_PUBLIC_APP_URL ne pointe que sur l'une des deux.
+    trustedOrigins: ["https://maxiviews.me", "https://www.maxiviews.me"],
+
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
