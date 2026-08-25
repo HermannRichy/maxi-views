@@ -131,6 +131,14 @@
     --sidebar-ring: oklch(0.6 0.27 296 / 65%);
 }
 
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 @keyframes marquee {
     from {
         transform: translateX(0);

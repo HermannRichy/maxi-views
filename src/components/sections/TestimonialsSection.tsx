@@ -17,6 +17,29 @@ export default function TestimonialsSection() {
 
     useGSAP(
         () => {
+            // Entrance reveal — runs on every breakpoint
+            const cards = gsap.utils.toArray<HTMLElement>(
+                "[data-testi-card]",
+                trackRef.current,
+            );
+            if (cards.length) {
+                gsap.set(cards, { autoAlpha: 0, y: 40 });
+                ScrollTrigger.batch(cards, {
+                    start: "top 90%",
+                    once: true,
+                    onEnter: (batch) =>
+                        gsap.to(batch, {
+                            autoAlpha: 1,
+                            y: 0,
+                            duration: 0.6,
+                            stagger: 0.1,
+                            ease: "power3.out",
+                            overwrite: true,
+                        }),
+                });
+            }
+
+            // Pinned horizontal scroll — desktop only, mobile keeps native swipe
             if (window.innerWidth < 1024) return;
             const getDist = () =>
                 trackRef.current!.scrollWidth -
@@ -53,16 +76,21 @@ export default function TestimonialsSection() {
                 </SectionTitle>
             </div>
 
-            <div ref={trackWrapRef} className="overflow-hidden">
+            <div
+                ref={trackWrapRef}
+                className="overflow-x-auto lg:overflow-hidden snap-x snap-mandatory lg:snap-none no-scrollbar"
+            >
                 <div
                     ref={trackRef}
                     className="flex gap-6 px-4 sm:px-6 lg:px-8 w-max"
                 >
                     {TESTIMONIALS.map((t) => (
-                        <FuturisticCard
+                        <div
                             key={t.name}
-                            className="relative p-6 w-[85vw] sm:w-96 shrink-0 overflow-hidden"
+                            data-testi-card
+                            className="w-[85vw] sm:w-96 shrink-0 snap-center"
                         >
+                        <FuturisticCard className="relative p-6 h-full overflow-hidden">
                             <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
 
                             <div className="flex mb-4">
@@ -92,9 +120,10 @@ export default function TestimonialsSection() {
                                 </div>
                             </div>
                         </FuturisticCard>
+                        </div>
                     ))}
 
-                    <div className="flex flex-col items-center justify-center gap-3 w-[85vw] sm:w-72 shrink-0 rounded-2xl border-2 border-dashed border-white/15 text-center px-6">
+                    <div data-testi-card className="flex flex-col items-center justify-center gap-3 w-[85vw] sm:w-72 shrink-0 rounded-2xl border-2 border-dashed border-white/15 text-center px-6 snap-center">
                         <p className="font-display text-2xl font-black">
                             Rejoignez-les
                         </p>

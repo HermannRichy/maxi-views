@@ -24,9 +24,9 @@ import {
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const CARDS = [
-    { src: "/hero1.jpg", x: -130, y: 40, rotate: -14 },
-    { src: "/hero2.jpg", x: 0, y: -50, rotate: 0 },
-    { src: "/hero3.jpg", x: 130, y: 40, rotate: 14 },
+    { src: "/hero1.jpg", x: -110, y: 30, rotate: -14 },
+    { src: "/hero2.jpg", x: 0, y: -40, rotate: 0 },
+    { src: "/hero3.jpg", x: 110, y: 30, rotate: 14 },
 ];
 
 export default function HeroSection() {
@@ -59,38 +59,45 @@ export default function HeroSection() {
                     "-=0.55",
                 );
 
-            // ── Realistic card deck: unfolds as you scroll ──
-            if (window.innerWidth >= 1024) {
-                const cards = gsap.utils.toArray<HTMLElement>(
-                    "[data-hero-card]",
-                    cardsWrapRef.current,
-                );
-                if (cards.length) {
-                    gsap.set(cards, {
-                        x: 0,
-                        y: 0,
-                        rotation: (i) => (i - 1) * 5,
-                    });
+            // ── Realistic card deck: unfolds as you scroll (all breakpoints) ──
+            const cards = gsap.utils.toArray<HTMLElement>(
+                "[data-hero-card]",
+                cardsWrapRef.current,
+            );
+            if (cards.length) {
+                const w = window.innerWidth;
+                const scale = w < 640 ? 0.5 : w < 1024 ? 0.75 : 1;
+                const pinDistance = w < 1024 ? 450 : 700;
 
-                    const tl = gsap.timeline({
-                        scrollTrigger: {
-                            trigger: sectionRef.current,
-                            start: "top top",
-                            end: "+=700",
-                            scrub: 0.6,
-                            pin: true,
+                gsap.set(cards, {
+                    x: 0,
+                    y: 0,
+                    rotation: (i) => (i - 1) * 5,
+                });
+
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: "top top",
+                        end: "+=" + pinDistance,
+                        scrub: 0.6,
+                        pin: true,
+                    },
+                });
+
+                cards.forEach((card, i) => {
+                    const { x, y, rotate } = CARDS[i];
+                    tl.to(
+                        card,
+                        {
+                            x: x * scale,
+                            y: y * scale,
+                            rotation: rotate,
+                            ease: "power2.out",
                         },
-                    });
-
-                    cards.forEach((card, i) => {
-                        const { x, y, rotate } = CARDS[i];
-                        tl.to(
-                            card,
-                            { x, y, rotation: rotate, ease: "power2.out" },
-                            0,
-                        );
-                    });
-                }
+                        0,
+                    );
+                });
             }
         },
         { scope: sectionRef },
@@ -101,12 +108,12 @@ export default function HeroSection() {
             ref={sectionRef}
             className="relative min-h-screen flex items-center overflow-hidden pt-28 pb-16"
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 {/* ── Left: content ── */}
                 <div className="text-left">
                     <div
                         data-hero-fade
-                        className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium"
+                        className="inline-flex items-center gap-2 px-4 py-2 mb-6 sm:mb-8 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium"
                     >
                         <IconBolt className="w-4 h-4" />
                         Plateforme SMM N°1 en Afrique
@@ -123,7 +130,7 @@ export default function HeroSection() {
 
                     <p
                         data-hero-fade
-                        className="text-muted-foreground text-lg sm:text-xl max-w-lg mb-10 leading-relaxed"
+                        className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-lg mb-8 sm:mb-10 leading-relaxed"
                     >
                         Achetez des vues, likes, followers et plus — pour
                         TikTok, Instagram, YouTube, Facebook et bien
@@ -132,7 +139,7 @@ export default function HeroSection() {
 
                     <div
                         data-hero-fade
-                        className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12"
+                        className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-10 sm:mb-12"
                     >
                         <Link
                             href="/sign-up"
@@ -171,13 +178,13 @@ export default function HeroSection() {
                 </div>
 
                 {/* ── Right: bold geometric + realistic card deck ── */}
-                <div className="relative hidden lg:flex items-center justify-center h-[520px]">
-                    <GeoCircle className="top-0 right-0 opacity-20" size={340} />
-                    <GeoRing className="bottom-6 left-2 opacity-40" size={200} />
+                <div className="relative flex items-center justify-center h-[300px] sm:h-[400px] lg:h-[520px]">
+                    <GeoCircle className="top-0 right-0 opacity-20" size={220} />
+                    <GeoRing className="bottom-2 left-0 opacity-40" size={140} />
 
                     <div
                         ref={cardsWrapRef}
-                        className="relative w-56 h-72"
+                        className="relative w-32 h-44 sm:w-44 sm:h-60 lg:w-56 lg:h-72"
                         style={{ perspective: 1000 }}
                     >
                         {CARDS.map((c, i) => (
@@ -191,7 +198,7 @@ export default function HeroSection() {
                                     src={c.src}
                                     alt=""
                                     fill
-                                    sizes="224px"
+                                    sizes="(max-width: 640px) 128px, (max-width: 1024px) 176px, 224px"
                                     className="object-cover"
                                 />
                             </div>
@@ -199,31 +206,31 @@ export default function HeroSection() {
                     </div>
 
                     {/* Floating stat chips */}
-                    <div className="absolute top-6 left-0 rounded-2xl bg-card/90 backdrop-blur-xl border border-white/10 shadow-2xl px-5 py-4 flex items-center gap-3 z-10">
-                        <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary shrink-0">
-                            <IconTrendingUp className="w-5 h-5" />
+                    <div className="absolute top-2 left-0 sm:top-6 rounded-xl sm:rounded-2xl bg-card/90 backdrop-blur-xl border border-white/10 shadow-2xl px-2.5 py-2 sm:px-5 sm:py-4 flex items-center gap-2 sm:gap-3 z-10">
+                        <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/15 flex items-center justify-center text-primary shrink-0">
+                            <IconTrendingUp className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                         </div>
                         <div>
-                            <p className="text-lg font-black tabular-nums leading-none">
+                            <p className="text-xs sm:text-lg font-black tabular-nums leading-none">
                                 50K+
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
                                 Commandes livrées
                             </p>
                         </div>
                     </div>
 
-                    <div className="absolute bottom-4 right-0 rounded-2xl bg-card/90 backdrop-blur-xl border border-white/10 shadow-2xl px-5 py-4 flex items-center gap-3 z-10">
+                    <div className="absolute bottom-1 right-0 sm:bottom-4 rounded-xl sm:rounded-2xl bg-card/90 backdrop-blur-xl border border-white/10 shadow-2xl px-2.5 py-2 sm:px-5 sm:py-4 flex items-center gap-2 sm:gap-3 z-10">
                         <div className="flex text-lime">
-                            <IconStarFilled className="w-4 h-4" />
-                            <IconStarFilled className="w-4 h-4" />
-                            <IconStarFilled className="w-4 h-4" />
+                            <IconStarFilled className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <IconStarFilled className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <IconStarFilled className="w-3 h-3 sm:w-4 sm:h-4" />
                         </div>
                         <div>
-                            <p className="text-lg font-black leading-none">
+                            <p className="text-xs sm:text-lg font-black leading-none">
                                 4.9/5
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
                                 Satisfaction client
                             </p>
                         </div>
