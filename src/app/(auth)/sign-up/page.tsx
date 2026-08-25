@@ -19,6 +19,8 @@ import {
     IconAlertCircle,
     IconEyeShare,
     IconRocket,
+    IconEye,
+    IconEyeOff,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -34,6 +36,7 @@ export default function SignUpPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSocialLoading, setIsSocialLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     useGSAP(
         () => {
@@ -323,16 +326,35 @@ export default function SignUpPage() {
                                     <IconLock className="w-3.5 h-3.5" /> Mot de
                                     passe
                                 </Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all"
-                                    required
-                                    minLength={8}
-                                    disabled={isLoading || isSocialLoading}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all pr-11"
+                                        required
+                                        minLength={8}
+                                        disabled={isLoading || isSocialLoading}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((v) => !v)}
+                                        tabIndex={-1}
+                                        aria-label={
+                                            showPassword
+                                                ? "Masquer le mot de passe"
+                                                : "Afficher le mot de passe"
+                                        }
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        {showPassword ? (
+                                            <IconEyeOff className="w-4.5 h-4.5" />
+                                        ) : (
+                                            <IconEye className="w-4.5 h-4.5" />
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                             <Button
                                 type="submit"
