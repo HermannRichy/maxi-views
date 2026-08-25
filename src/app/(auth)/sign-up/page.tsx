@@ -21,6 +21,7 @@ import {
     IconRocket,
     IconEye,
     IconEyeOff,
+    IconUser,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -29,6 +30,7 @@ export default function SignUpPage() {
     const wrapRef = useRef<HTMLDivElement>(null);
     const { data: session, isPending } = authClient.useSession();
 
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [pendingVerification, setPendingVerification] = useState(false);
@@ -61,7 +63,7 @@ export default function SignUpPage() {
         const { error } = await authClient.signUp.email({
             email,
             password,
-            name: email.split("@")[0],
+            name: name.trim(),
         });
 
         if (error) {
@@ -299,6 +301,24 @@ export default function SignUpPage() {
                         </div>
 
                         <form onSubmit={handleEmailSignUp} className="space-y-5">
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="name"
+                                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 px-1"
+                                >
+                                    <IconUser className="w-3.5 h-3.5" /> Nom complet
+                                </Label>
+                                <Input
+                                    id="name"
+                                    type="text"
+                                    placeholder="Jean Dupont"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all"
+                                    required
+                                    disabled={isLoading || isSocialLoading}
+                                />
+                            </div>
                             <div className="space-y-2">
                                 <Label
                                     htmlFor="email"
