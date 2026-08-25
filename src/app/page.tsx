@@ -1,6 +1,8 @@
 import Header from "@/components/sections/Header";
 import HeroSection from "@/components/sections/HeroSection";
+import MarqueeStrip from "@/components/sections/MarqueeStrip";
 import StatsSection from "@/components/sections/StatsSection";
+import AttractSection from "@/components/sections/AttractSection";
 import NetworksSection from "@/components/sections/NetworksSection";
 import FeaturedServicesSection from "@/components/sections/FeaturedServicesSection";
 import HowItWorksSection from "@/components/sections/HowItWorksSection";
@@ -15,7 +17,9 @@ export default function Home() {
         <main className="min-h-screen bg-background text-foreground">
             <Header />
             <HeroSection />
+            <MarqueeStrip />
             <StatsSection />
+            <AttractSection />
             <NetworksSection />
             <FeaturedServicesSection />
             <HowItWorksSection />

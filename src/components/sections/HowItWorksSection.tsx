@@ -1,9 +1,14 @@
+"use client";
+
 import { SectionTitle, SectionBorder, GeoRing } from "@/components/ui/futuristic";
 import { HOW_IT_WORKS } from "@/data/landing";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function HowItWorksSection() {
+    const sectionRef = useScrollReveal<HTMLElement>();
+
     return (
-        <section className="relative overflow-hidden py-24">
+        <section ref={sectionRef} className="relative overflow-hidden py-24">
             <GeoRing className="-top-16 right-[15%] opacity-40 -z-10" size={200} />
             <GeoRing className="-bottom-16 left-[10%] opacity-30 -z-10" size={160} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -16,6 +21,7 @@ export default function HowItWorksSection() {
                     {HOW_IT_WORKS.map((step, i) => (
                         <div
                             key={step.title}
+                            data-reveal
                             className="relative flex flex-col items-center text-center"
                         >
                             {/* Connector line */}

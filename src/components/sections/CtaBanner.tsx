@@ -1,15 +1,43 @@
+"use client";
+
+import { useRef } from "react";
 import Link from "next/link";
-import { GeoCircle, GeoRing } from "@/components/ui/futuristic";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { GeoCircle } from "@/components/ui/futuristic";
 import { IconLock, IconArrowRight } from "@tabler/icons-react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function CtaBanner() {
+    const sectionRef = useScrollReveal<HTMLElement>();
+    const ringRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(
+        () => {
+            if (!ringRef.current) return;
+            gsap.to(ringRef.current, {
+                rotation: 360,
+                duration: 40,
+                repeat: -1,
+                ease: "none",
+            });
+        },
+        { scope: sectionRef },
+    );
+
     return (
-        <section className="py-24">
+        <section ref={sectionRef} className="py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative rounded-3xl border border-white/10 bg-card p-12 text-center overflow-hidden">
+                <div
+                    data-reveal
+                    className="relative rounded-3xl border border-white/10 bg-card p-12 text-center overflow-hidden"
+                >
                     {/* Bold geometric corner shapes */}
                     <GeoCircle className="-top-24 -right-24 opacity-90" size={320} />
-                    <GeoRing className="-bottom-16 -left-16 opacity-60" size={220} />
+                    <div
+                        ref={ringRef}
+                        className="absolute -bottom-16 -left-16 w-[220px] h-[220px] rounded-full border-[3px] border-primary opacity-60 pointer-events-none"
+                    />
 
                     <div className="relative w-14 h-14 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary mx-auto mb-6">
                         <IconLock className="w-6 h-6" />

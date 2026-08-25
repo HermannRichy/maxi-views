@@ -8,10 +8,13 @@ import {
 } from "@/components/ui/accordion";
 import { SectionTitle, SectionBorder, GeoRing } from "@/components/ui/futuristic";
 import { FAQ } from "@/data/landing";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function FaqSection() {
+    const sectionRef = useScrollReveal<HTMLElement>();
+
     return (
-        <section id="faq" className="relative overflow-hidden py-24 bg-muted/20">
+        <section id="faq" ref={sectionRef} className="relative overflow-hidden py-24 bg-muted/20">
             <GeoRing className="-top-10 right-[8%] opacity-40 -z-10" size={180} />
             <GeoRing className="-bottom-10 left-[8%] opacity-30 -z-10" size={140} />
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -23,6 +26,7 @@ export default function FaqSection() {
                     {FAQ.map((item, i) => (
                         <div
                             key={i}
+                            data-reveal
                             className="rounded-2xl border border-white/10 bg-card hover:border-primary/30 transition-colors duration-200"
                         >
                             <AccordionItem
