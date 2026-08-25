@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-    FuturisticCard,
-    SectionTitle,
-    SectionBorder,
-    CLIP_TR_SM,
-} from "@/components/ui/futuristic";
-import { ArrowRight } from "lucide-react";
+import { FuturisticCard, SectionTitle, SectionBorder } from "@/components/ui/futuristic";
+import { IconArrowRight } from "@tabler/icons-react";
 import { FEATURED_SERVICES } from "@/data/landing";
 
 export default function FeaturedServicesSection() {
@@ -38,10 +33,7 @@ export default function FeaturedServicesSection() {
                                         <h3 className="font-bold">{s.name}</h3>
                                     </div>
                                 </div>
-                                <span
-                                    className="text-xs bg-primary/10 text-primary px-2 py-0.5 font-medium shrink-0 ml-2"
-                                    style={{ clipPath: CLIP_TR_SM }}
-                                >
+                                <span className="text-xs bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium shrink-0 ml-2">
                                     {s.badge}
                                 </span>
                             </div>
@@ -62,22 +54,12 @@ export default function FeaturedServicesSection() {
                                         pour {s.unit}
                                     </p>
                                 </div>
-                                {/* Chamfered CTA */}
                                 <Link
                                     href="/dashboard/new-order"
-                                    className="group/btn relative"
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium shadow-sm shadow-primary/20 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30 transition-all"
                                 >
-                                    <div
-                                        className="absolute inset-0 bg-primary/20 translate-x-[2px] translate-y-[2px]"
-                                        style={{ clipPath: CLIP_TR_SM }}
-                                    />
-                                    <div
-                                        className="relative px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1 group-hover/btn:bg-primary/90 transition-colors"
-                                        style={{ clipPath: CLIP_TR_SM }}
-                                    >
-                                        Commander
-                                        <ArrowRight className="w-3.5 h-3.5" />
-                                    </div>
+                                    Commander
+                                    <IconArrowRight className="w-3.5 h-3.5" />
                                 </Link>
                             </div>
                         </FuturisticCard>
@@ -88,7 +70,7 @@ export default function FeaturedServicesSection() {
                     <Button variant="outline" size="lg" asChild>
                         <Link href="/dashboard/new-order">
                             Voir tous les services
-                            <ArrowRight className="ml-2 w-4 h-4" />
+                            <IconArrowRight className="ml-2 w-4 h-4" />
                         </Link>
                     </Button>
                 </div>

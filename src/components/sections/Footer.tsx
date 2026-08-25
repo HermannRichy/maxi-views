@@ -1,11 +1,6 @@
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
-import { IconEyeShare } from "@tabler/icons-react";
-import {
-    CornerBracket,
-    SectionBorder,
-    CLIP_TR_SM,
-} from "@/components/ui/futuristic";
+import { IconEyeShare, IconCircleCheck } from "@tabler/icons-react";
+import { SectionBorder } from "@/components/ui/futuristic";
 import { FOOTER_SOCIAL_ICONS, FOOTER_LINKS } from "@/data/landing";
 
 const FOOTER_SERVICES = [
@@ -19,7 +14,6 @@ const FOOTER_SERVICES = [
 export default function Footer() {
     return (
         <footer className="pt-2">
-            {/* Top border with notch */}
             <SectionBorder />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
@@ -27,10 +21,7 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="md:col-span-2">
                         <div className="flex items-center gap-2 mb-4">
-                            <div
-                                className="w-8 h-8 bg-primary flex items-center justify-center"
-                                style={{ clipPath: CLIP_TR_SM }}
-                            >
+                            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
                                 <IconEyeShare className="w-4 h-4 text-primary-foreground" />
                             </div>
                             <span className="font-display text-xl font-bold">
@@ -42,13 +33,12 @@ export default function Footer() {
                             présence sur les réseaux sociaux.
                         </p>
 
-                        {/* Social icons — chamfered */}
+                        {/* Social icons */}
                         <div className="flex gap-3 mt-4">
                             {FOOTER_SOCIAL_ICONS.map(({ Icon, color }) => (
                                 <div
                                     key={color}
-                                    className="w-8 h-8 bg-muted hover:bg-accent transition-colors flex items-center justify-center cursor-pointer"
-                                    style={{ clipPath: CLIP_TR_SM }}
+                                    className="w-8 h-8 rounded-lg bg-muted hover:bg-accent transition-colors flex items-center justify-center cursor-pointer"
                                 >
                                     <Icon
                                         className="w-4 h-4"
@@ -63,7 +53,7 @@ export default function Footer() {
                     {/* Services */}
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="w-1 h-4 bg-primary" />
+                            <div className="w-1 h-4 rounded-full bg-primary" />
                             <h4 className="font-semibold text-sm">Services</h4>
                         </div>
                         <ul className="space-y-2 text-sm text-muted-foreground">
@@ -72,7 +62,7 @@ export default function Footer() {
                                     key={n}
                                     className="flex items-center gap-2 group/link"
                                 >
-                                    <div className="w-1 h-1 bg-primary/40 rotate-45 group-hover/link:bg-primary transition-colors" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover/link:bg-primary transition-colors" />
                                     <Link
                                         href="/dashboard/new-order"
                                         className="hover:text-foreground transition-colors"
@@ -87,7 +77,7 @@ export default function Footer() {
                     {/* Liens utiles */}
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="w-1 h-4 bg-primary" />
+                            <div className="w-1 h-4 rounded-full bg-primary" />
                             <h4 className="font-semibold text-sm">
                                 Liens utiles
                             </h4>
@@ -98,7 +88,7 @@ export default function Footer() {
                                     key={l.label}
                                     className="flex items-center gap-2 group/link"
                                 >
-                                    <div className="w-1 h-1 bg-primary/40 rotate-45 group-hover/link:bg-primary transition-colors" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover/link:bg-primary transition-colors" />
                                     <Link
                                         href={l.href}
                                         className="hover:text-foreground transition-colors"
@@ -113,17 +103,7 @@ export default function Footer() {
 
                 {/* Bottom row */}
                 <SectionBorder />
-                <div className="relative pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-                    <CornerBracket
-                        size={8}
-                        className="absolute bottom-0 left-0 text-primary/20"
-                        rotate={270}
-                    />
-                    <CornerBracket
-                        size={8}
-                        className="absolute bottom-0 right-0 text-primary/20"
-                        rotate={180}
-                    />
+                <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
                     <p>
                         © {new Date().getFullYear()} Maxi Views. Tous droits
                         réservés.
@@ -133,7 +113,7 @@ export default function Footer() {
                         <span className="font-semibold text-foreground">
                             FeexPay
                         </span>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <IconCircleCheck className="w-3.5 h-3.5 text-success" />
                     </div>
                 </div>
             </div>

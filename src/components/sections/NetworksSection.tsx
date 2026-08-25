@@ -1,10 +1,5 @@
-import {
-    FuturisticCard,
-    SectionTitle,
-    SectionBorder,
-    CLIP_TR_SM,
-} from "@/components/ui/futuristic";
-import { Zap } from "lucide-react";
+import { FuturisticCard, SectionTitle, SectionBorder } from "@/components/ui/futuristic";
+import { IconSparkles } from "@tabler/icons-react";
 import { NETWORKS } from "@/data/landing";
 
 export default function NetworksSection() {
@@ -18,7 +13,7 @@ export default function NetworksSection() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {NETWORKS.map((n) => (
-                        <FuturisticCard key={n.name} className="p-6">
+                        <FuturisticCard key={n.name} className="relative p-6 overflow-hidden group">
                             {/* Network gradient overlay on hover */}
                             <div
                                 className={`absolute inset-0 bg-gradient-to-br ${n.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
@@ -37,7 +32,7 @@ export default function NetworksSection() {
                                         key={svc}
                                         className="text-xs text-muted-foreground flex items-center gap-1.5"
                                     >
-                                        <div className="w-1 h-1 bg-primary rotate-45 shrink-0" />
+                                        <div className="w-1 h-1 rounded-full bg-primary shrink-0" />
                                         {svc}
                                     </li>
                                 ))}
@@ -46,36 +41,13 @@ export default function NetworksSection() {
                     ))}
 
                     {/* "Et bien plus" card */}
-                    <div className="relative group cursor-pointer">
-                        <div
-                            className="absolute inset-0 bg-primary/20 group-hover:bg-primary/30 transition-colors"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        />
-                        <div
-                            className="relative bg-primary/5 group-hover:bg-primary/10 transition-colors m-[1px] p-6 flex flex-col items-center justify-center text-center"
-                            style={{ clipPath: CLIP_TR_SM }}
-                        >
-                            <Zap className="w-9 h-9 mb-3 text-primary" />
-                            <h3 className="font-bold text-sm mb-1">
-                                Et bien plus
-                            </h3>
-                            <p className="text-xs text-muted-foreground">
-                                Nouveaux réseaux à venir
-                            </p>
-                        </div>
-                        <svg
-                            className="absolute top-0 right-0 text-primary/40"
-                            width="10"
-                            height="10"
-                            viewBox="0 0 10 10"
-                            fill="none"
-                        >
-                            <path
-                                d="M 10 0 L 0 10 L 10 10 Z"
-                                fill="currentColor"
-                            />
-                        </svg>
-                    </div>
+                    <FuturisticCard className="p-6 flex flex-col items-center justify-center text-center bg-primary/5">
+                        <IconSparkles className="w-9 h-9 mb-3 text-primary" />
+                        <h3 className="font-bold text-sm mb-1">Et bien plus</h3>
+                        <p className="text-xs text-muted-foreground">
+                            Nouveaux réseaux à venir
+                        </p>
+                    </FuturisticCard>
                 </div>
             </div>
             <SectionBorder className="mt-24" />

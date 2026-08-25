@@ -41,18 +41,18 @@ interface FuturisticCardProps {
     bracketSize?: number;
 }
 
-export function FuturisticCard({
-    children,
-    className = "",
-}: FuturisticCardProps) {
-    return (
-        <div
-            className={`rounded-2xl border border-white/10 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_40px_-12px_var(--primary)] ${className}`}
-        >
-            {children}
-        </div>
-    );
-}
+export const FuturisticCard = React.forwardRef<HTMLDivElement, FuturisticCardProps>(
+    function FuturisticCard({ children, className = "" }, ref) {
+        return (
+            <div
+                ref={ref}
+                className={`rounded-2xl border border-white/10 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_40px_-12px_var(--primary)] ${className}`}
+            >
+                {children}
+            </div>
+        );
+    },
+);
 
 /* ────────────────────────────────────────────────────────────────────
    SECTION TITLE

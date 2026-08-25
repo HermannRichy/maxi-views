@@ -1,8 +1,4 @@
-import {
-    SectionTitle,
-    SectionBorder,
-    CLIP_DUAL_SM,
-} from "@/components/ui/futuristic";
+import { SectionTitle, SectionBorder } from "@/components/ui/futuristic";
 import { HOW_IT_WORKS } from "@/data/landing";
 
 export default function HowItWorksSection() {
@@ -23,24 +19,17 @@ export default function HowItWorksSection() {
                             {/* Connector line */}
                             {i < HOW_IT_WORKS.length - 1 && (
                                 <div className="hidden lg:flex absolute top-8 left-1/2 w-full items-center gap-1 z-0">
-                                    <div className="flex-1 h-px bg-border/60" />
-                                    <div className="w-1 h-1 bg-primary/40 rotate-45" />
+                                    <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
                                 </div>
                             )}
 
-                            {/* Step icon — chamfered box */}
+                            {/* Step icon */}
                             <div className="relative z-10 mb-4">
-                                <div
-                                    className="w-16 h-16 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary"
-                                    style={{ clipPath: CLIP_DUAL_SM }}
-                                >
+                                <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
                                     <step.Icon className="w-7 h-7" />
                                 </div>
-                                {/* Step number — chamfered dot */}
-                                <div
-                                    className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold"
-                                    style={{ clipPath: CLIP_DUAL_SM }}
-                                >
+                                {/* Step number */}
+                                <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">
                                     {i + 1}
                                 </div>
                             </div>
