@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import emailjs from "@emailjs/browser";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FuturisticCard, SectionTitle } from "@/components/ui/futuristic";
+import { FuturisticCard, SectionTitle, GeoCircle, GeoRing } from "@/components/ui/futuristic";
 import {
     IconMail,
     IconMessageCircle,
@@ -16,6 +19,8 @@ import {
     IconSend,
     IconBolt,
 } from "@tabler/icons-react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /* ─────────────────────────────────────────────────────────────────
    Info cards
@@ -153,23 +158,42 @@ function ContactForm() {
    Page
 ───────────────────────────────────────────────────────────────── */
 export default function ContactPage() {
+    const mainRef = useRef<HTMLElement>(null);
+
+    useGSAP(
+        () => {
+            gsap.set("[data-contact-field]", { autoAlpha: 0, y: 24 });
+            gsap.to("[data-contact-field]", {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.6,
+                stagger: 0.08,
+                ease: "power3.out",
+                delay: 0.1,
+            });
+        },
+        { scope: mainRef },
+    );
+
     return (
-        <main className="min-h-screen bg-background text-foreground pt-24 pb-16">
-            {/* Background glow */}
-            <div className="fixed inset-0 -z-10">
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[100px]" />
-                <div
-                    className="absolute inset-0 opacity-[0.02]"
-                    style={{
-                        backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
-                        backgroundSize: "60px 60px",
-                    }}
-                />
-            </div>
+        <main
+            ref={mainRef}
+            className="relative min-h-screen bg-background text-foreground pt-24 pb-16 overflow-hidden"
+        >
+            {/* Background decor */}
+            <GeoCircle className="top-1/4 -right-32 opacity-10 -z-10" size={420} />
+            <GeoRing className="bottom-10 -left-24 opacity-20 -z-10" size={280} />
+            <div
+                className="fixed inset-0 -z-10 opacity-[0.02]"
+                style={{
+                    backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+                    backgroundSize: "60px 60px",
+                }}
+            />
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Back link */}
-                <div className="mb-10">
+                <div data-contact-field className="mb-10">
                     <Link
                         href="/"
                         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
@@ -179,54 +203,60 @@ export default function ContactPage() {
                     </Link>
                 </div>
 
-                <SectionTitle subtitle="Notre équipe est disponible 24h/7j pour répondre à vos questions.">
-                    Contactez-<span className="text-primary">nous</span>
-                </SectionTitle>
+                <div data-contact-field>
+                    <SectionTitle subtitle="Notre équipe est disponible 24h/7j pour répondre à vos questions.">
+                        Contactez-<span className="text-primary">nous</span>
+                    </SectionTitle>
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* ── Left: info cards ── */}
                     <div className="space-y-4">
                         {CONTACT_INFO.map((info) => (
-                            <FuturisticCard key={info.title} className="p-5">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-                                        <info.Icon className="w-5 h-5" />
+                            <div key={info.title} data-contact-field>
+                                <FuturisticCard className="p-5">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                                            <info.Icon className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">
+                                                {info.title}
+                                            </p>
+                                            <p className="font-bold text-sm">
+                                                {info.value}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                {info.desc}
+                                            </p>
+                                        </div>
                                     </div>
+                                </FuturisticCard>
+                            </div>
+                        ))}
+
+                        {/* Quick tip */}
+                        <div data-contact-field>
+                            <FuturisticCard className="p-5 bg-primary/5">
+                                <div className="flex items-start gap-3">
+                                    <IconBolt className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">
-                                            {info.title}
+                                        <p className="font-semibold text-sm mb-1">
+                                            Conseil rapide
                                         </p>
-                                        <p className="font-bold text-sm">
-                                            {info.value}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground mt-0.5">
-                                            {info.desc}
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            Pour les questions sur une commande,
+                                            incluez son ID dans votre message pour
+                                            une réponse plus rapide.
                                         </p>
                                     </div>
                                 </div>
                             </FuturisticCard>
-                        ))}
-
-                        {/* Quick tip */}
-                        <FuturisticCard className="p-5 bg-primary/5">
-                            <div className="flex items-start gap-3">
-                                <IconBolt className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-semibold text-sm mb-1">
-                                        Conseil rapide
-                                    </p>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        Pour les questions sur une commande,
-                                        incluez son ID dans votre message pour
-                                        une réponse plus rapide.
-                                    </p>
-                                </div>
-                            </div>
-                        </FuturisticCard>
+                        </div>
                     </div>
 
                     {/* ── Right: form ── */}
-                    <div className="lg:col-span-2">
+                    <div data-contact-field className="lg:col-span-2">
                         <ContactForm />
                     </div>
                 </div>
