@@ -126,7 +126,7 @@ export async function sendVerificationOtpEmail({
 }) {
     if (!resend) return;
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM,
             to: email,
             subject: OTP_SUBJECTS[type] ?? "Votre code de vérification",
@@ -142,6 +142,7 @@ export async function sendVerificationOtpEmail({
             `,
             ),
         });
+        if (error) console.error("Erreur d'envoi email OTP:", error);
     } catch (error) {
         console.error("Erreur d'envoi email OTP:", error);
     }
@@ -161,7 +162,7 @@ export async function sendContactMessage({
 }) {
     if (!resend) return;
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM,
             to: ADMIN_EMAIL,
             replyTo: email,
@@ -179,6 +180,7 @@ export async function sendContactMessage({
             `,
             ),
         });
+        if (error) console.error("Erreur d'envoi email de contact:", error);
     } catch (error) {
         console.error("Erreur d'envoi email de contact:", error);
     }
@@ -193,7 +195,7 @@ export async function sendDepositConfirmed({
 }: DepositConfirmedProps) {
     if (!resend) return;
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM,
             to,
             subject: `✅ Rechargement de ${fcfa(amount)} confirmé — Maxi Views`,
@@ -211,6 +213,7 @@ export async function sendDepositConfirmed({
             `,
             ),
         });
+        if (error) console.error("Erreur d'envoi email de dépôt confirmé:", error);
     } catch (error) {
         console.error("Erreur d'envoi email de dépôt confirmé:", error);
     }
@@ -228,7 +231,7 @@ export async function sendOrderCreatedUser({
 }: OrderCreatedUserProps) {
     if (!resend) return;
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM,
             to,
             subject: `🛒 Commande #${orderId.slice(-8).toUpperCase()} reçue — Maxi Views`,
@@ -248,6 +251,7 @@ export async function sendOrderCreatedUser({
             `,
             ),
         });
+        if (error) console.error("Erreur d'envoi email de commande (user):", error);
     } catch (error) {
         console.error("Erreur d'envoi email de commande (user):", error);
     }
@@ -266,7 +270,7 @@ export async function sendOrderCreatedAdmin({
 }: OrderCreatedAdminProps) {
     if (!resend) return;
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM,
             to: ADMIN_EMAIL,
             subject: `🔔 Nouvelle commande #${orderId.slice(-8).toUpperCase()} — ${network} / ${serviceName}`,
@@ -288,6 +292,7 @@ export async function sendOrderCreatedAdmin({
             `,
             ),
         });
+        if (error) console.error("Erreur d'envoi email de commande (admin):", error);
     } catch (error) {
         console.error("Erreur d'envoi email de commande (admin):", error);
     }
@@ -313,7 +318,7 @@ export async function sendOrderStatusChanged({
                 ? "⚙️"
                 : "ℹ️";
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM,
             to,
             subject: `${emoji} Commande #${orderId.slice(-8).toUpperCase()} — ${label}`,
@@ -332,6 +337,7 @@ export async function sendOrderStatusChanged({
             `,
             ),
         });
+        if (error) console.error("Erreur d'envoi email de changement de statut:", error);
     } catch (error) {
         console.error("Erreur d'envoi email de changement de statut:", error);
     }
