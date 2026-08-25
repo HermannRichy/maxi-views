@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSignIn, useUser } from "@clerk/nextjs";
-import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GeoCircle, GeoRing } from "@/components/ui/futuristic";
 import {
     IconBrandGoogleFilled,
-    IconBrandAppleFilled,
     IconMail,
     IconLock,
     IconLoader2,
@@ -24,25 +22,15 @@ import {
 import { toast } from "sonner";
 
 export default function LoginPage() {
-    const { isLoaded, signIn, setActive } = useSignIn();
-    const { isSignedIn, isLoaded: userLoaded } = useUser();
     const router = useRouter();
     const wrapRef = useRef<HTMLDivElement>(null);
+    const { data: session, isPending } = authClient.useSession();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [isSocialLoading, setIsSocialLoading] = useState<
-        "google" | "apple" | null
-    >(null);
+    const [isSocialLoading, setIsSocialLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    // Redirect if user is already signed in
-    useEffect(() => {
-        if (userLoaded && isSignedIn) {
-            router.push("/dashboard");
-        }
-    }, [userLoaded, isSignedIn, router]);
 
     useGSAP(
         () => {
@@ -56,71 +44,46 @@ export default function LoginPage() {
                 delay: 0.1,
             });
         },
-        { scope: wrapRef, dependencies: [userLoaded] },
+        { scope: wrapRef, dependencies: [isPending] },
     );
 
     const handleEmailSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isLoaded || !signIn) return;
-
         setIsLoading(true);
         setError(null);
 
-        try {
-            const result = await signIn.create({
-                identifier: email,
-                password,
-            });
+        const { error } = await authClient.signIn.email({ email, password });
 
-            if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                router.push("/dashboard");
-                toast.success("Bon retour !");
-            } else {
-                console.error(result);
-                toast.error(
-                    "Échec de la connexion. Veuillez vérifier vos identifiants.",
-                );
-            }
-        } catch (err) {
-            const errorMessage = isClerkAPIResponseError(err)
-                ? err.errors[0]?.message
-                : "Erreur lors de la connexion";
-            setError(errorMessage);
-            toast.error(errorMessage);
-        } finally {
+        if (error) {
+            const message = error.message ?? "Erreur lors de la connexion";
+            setError(message);
+            toast.error(message);
             setIsLoading(false);
+        } else {
+            toast.success("Bon retour !");
+            window.location.assign("/dashboard");
         }
     };
 
-    const handleSocialSignIn = async (
-        strategy: "oauth_google" | "oauth_apple",
-    ) => {
-        if (!isLoaded || !signIn) return;
-
-        setIsSocialLoading(strategy === "oauth_google" ? "google" : "apple");
+    const handleGoogleSignIn = async () => {
+        setIsSocialLoading(true);
         setError(null);
 
-        const baseUrl =
-            process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-
         try {
-            await signIn.authenticateWithRedirect({
-                strategy,
-                redirectUrl: `${baseUrl}/sso-callback`,
-                redirectUrlComplete: "/dashboard",
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/dashboard",
             });
         } catch (err) {
-            const errorMessage = isClerkAPIResponseError(err)
-                ? err.errors[0]?.message
-                : "Erreur lors de la connexion";
-            setError(errorMessage);
-            toast.error(errorMessage);
-            setIsSocialLoading(null);
+            const message =
+                err instanceof Error ? err.message : "Erreur lors de la connexion";
+            setError(message);
+            toast.error(message);
+            setIsSocialLoading(false);
         }
     };
 
-    if (!userLoaded) {
+    if (isPending) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
@@ -128,7 +91,10 @@ export default function LoginPage() {
         );
     }
 
-    if (isSignedIn) return null;
+    if (session) {
+        router.push("/dashboard");
+        return null;
+    }
 
     return (
         <div ref={wrapRef} className="min-h-screen grid lg:grid-cols-2">
@@ -197,35 +163,19 @@ export default function LoginPage() {
                             </div>
                         )}
 
-                        <div className="space-y-4 mb-8">
+                        <div className="mb-8">
                             <Button
-                                onClick={() => handleSocialSignIn("oauth_google")}
-                                disabled={isSocialLoading !== null || isLoading}
+                                onClick={handleGoogleSignIn}
+                                disabled={isSocialLoading || isLoading}
                                 variant="outline"
                                 className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
                             >
-                                {isSocialLoading === "google" ? (
+                                {isSocialLoading ? (
                                     <IconLoader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <>
                                         <IconBrandGoogleFilled className="mr-2 h-5 w-5" />{" "}
                                         Continuer avec Google
-                                    </>
-                                )}
-                            </Button>
-
-                            <Button
-                                onClick={() => handleSocialSignIn("oauth_apple")}
-                                disabled={isSocialLoading !== null || isLoading}
-                                variant="outline"
-                                className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
-                            >
-                                {isSocialLoading === "apple" ? (
-                                    <IconLoader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        <IconBrandAppleFilled className="mr-2 h-5 w-5" />{" "}
-                                        Continuer avec Apple
                                     </>
                                 )}
                             </Button>
@@ -257,7 +207,7 @@ export default function LoginPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all placeholder:text-muted-foreground/30"
                                     required
-                                    disabled={isLoading || isSocialLoading !== null}
+                                    disabled={isLoading || isSocialLoading}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -284,13 +234,13 @@ export default function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all"
                                     required
-                                    disabled={isLoading || isSocialLoading !== null}
+                                    disabled={isLoading || isSocialLoading}
                                 />
                             </div>
                             <Button
                                 type="submit"
                                 className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary/20 mt-4 active:scale-[0.98] transition-transform"
-                                disabled={isLoading || isSocialLoading !== null}
+                                disabled={isLoading || isSocialLoading}
                             >
                                 {isLoading ? (
                                     <IconLoader2 className="h-5 w-5 animate-spin" />

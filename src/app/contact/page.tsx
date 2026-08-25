@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import emailjs from "@emailjs/browser";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -58,17 +57,24 @@ function ContactForm() {
         if (!formRef.current) return;
         setLoading(true);
 
+        const formData = new FormData(formRef.current);
+
         try {
-            await emailjs.sendForm(
-                process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-                process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-                formRef.current,
-                process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
-            );
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.get("user_name"),
+                    email: formData.get("user_email"),
+                    subject: formData.get("user_subject"),
+                    message: formData.get("message"),
+                }),
+            });
+            if (!res.ok) throw new Error("Request failed");
             toast.success("Message envoyé ! Nous vous répondons sous 24h.");
             formRef.current.reset();
         } catch (error) {
-            console.error("EmailJS Error:", error);
+            console.error("Contact form error:", error);
             toast.error("Échec de l'envoi. Veuillez réessayer.");
         } finally {
             setLoading(false);

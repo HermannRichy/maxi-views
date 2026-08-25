@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CookieConsent } from "@/components/CookieConsent";
 
 const kingred = localFont({
     src: "./fonts/kingred.otf",
@@ -80,22 +80,21 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <ClerkProvider>
-            <html lang="fr" suppressHydrationWarning>
-                <body
-                    className={`${kingred.variable} ${satoshi.variable} antialiased font-sans`}
+        <html lang="fr" suppressHydrationWarning>
+            <body
+                className={`${kingred.variable} ${satoshi.variable} antialiased font-sans`}
+            >
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="dark"
+                    enableSystem={false}
+                    disableTransitionOnChange
                 >
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="dark"
-                        enableSystem={false}
-                        disableTransitionOnChange
-                    >
-                        {children}
-                        <Toaster position="top-center" />
-                    </ThemeProvider>
-                </body>
-            </html>
-        </ClerkProvider>
+                    {children}
+                    <Toaster position="top-center" />
+                    <CookieConsent />
+                </ThemeProvider>
+            </body>
+        </html>
     );
 }

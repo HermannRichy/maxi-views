@@ -42,12 +42,24 @@ export default function NetworksSection() {
             gsap.fromTo(
                 stageRef.current,
                 { autoAlpha: 0, y: 16, scale: 0.98 },
-                { autoAlpha: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" },
+                {
+                    autoAlpha: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.45,
+                    ease: "power3.out",
+                },
             );
             gsap.fromTo(
                 "[data-net-icon]",
                 { scale: 0.4, rotate: -20, autoAlpha: 0 },
-                { scale: 1, rotate: 0, autoAlpha: 1, duration: 0.55, ease: "back.out(2.2)" },
+                {
+                    scale: 1,
+                    rotate: 0,
+                    autoAlpha: 1,
+                    duration: 0.55,
+                    ease: "back.out(2.2)",
+                },
             );
         },
         { scope: sectionRef, dependencies: [active] },
@@ -84,7 +96,10 @@ export default function NetworksSection() {
                         >
                             <n.Icon
                                 className="w-4 h-4"
-                                style={{ color: active === i ? n.iconColor : undefined }}
+                                style={{
+                                    color:
+                                        active === i ? n.iconColor : undefined,
+                                }}
                                 stroke={1.5}
                             />
                             {n.name}
@@ -134,7 +149,9 @@ export default function NetworksSection() {
                                         >
                                             <IconCircleCheck
                                                 className="w-4 h-4 shrink-0"
-                                                style={{ color: current.iconColor }}
+                                                style={{
+                                                    color: current.iconColor,
+                                                }}
                                             />
                                             {svc}
                                         </li>
@@ -144,7 +161,7 @@ export default function NetworksSection() {
                                     href="/dashboard/new-order"
                                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all"
                                 >
-                                    Commander sur {current.name}
+                                    Commander pour {current.name}
                                     <IconArrowRight className="w-4 h-4" />
                                 </Link>
                             </div>

@@ -1,30 +1,47 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
-// 1. On définit les routes publiques de manière exhaustive
-const isPublicRoute = createRouteMatcher([
-    "/",
-    "/sign-in(.*)",
-    "/sign-up(.*)",
-    "/sso-callback(.*)",
-    "/contact",
-    "/cgu",
-    "/privacy",
-    "/api/wallet/callback(.*)", // Utilisation de (.*) pour parer au trailing slash
-]);
+// Routes publiques (accessibles sans session) — exhaustif.
+const PUBLIC_ROUTES: RegExp[] = [
+    /^\/$/,
+    /^\/sign-in(?:\/.*)?$/,
+    /^\/sign-up(?:\/.*)?$/,
+    /^\/forgot-password(?:\/.*)?$/,
+    /^\/reset-password(?:\/.*)?$/,
+    /^\/contact$/,
+    /^\/cgu$/,
+    /^\/privacy$/,
+    /^\/api\/auth(?:\/.*)?$/,
+    /^\/api\/contact$/,
+];
 
-// 2. On utilise l'export par défaut pour plus de sécurité avec Next 16
-export default clerkMiddleware(async (auth, request) => {
-    // AJOUTEZ CECI POUR LE DEBUG :
-    if (request.nextUrl.pathname.startsWith("/api/wallet/callback")) {
-        return; // On force l'arrêt du middleware Clerk ici pour tester
+function isPublicRoute(pathname: string) {
+    return PUBLIC_ROUTES.some((re) => re.test(pathname));
+}
+
+export default async function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // Webhook FedaPay : doit rester public, sans aucune vérification, sans exception.
+    if (pathname.startsWith("/api/wallet/callback")) {
+        return NextResponse.next();
     }
-    // Si la route n'est pas publique, on protège
-    if (!isPublicRoute(request)) {
-        await auth.protect();
-    }
-});
 
-// 3. Le matcher doit être une constante statique
+    if (isPublicRoute(pathname)) {
+        return NextResponse.next();
+    }
+
+    // Vérification légère (cookie only, pas d'appel DB — safe en Edge runtime).
+    // Le contrôle réel se fait côté layouts/routes via getCurrentUser()/
+    // requireUser()/requireAdmin() (runtime Node, peut utiliser Prisma).
+    const sessionCookie = getSessionCookie(request);
+    if (!sessionCookie) {
+        return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    return NextResponse.next();
+}
+
 export const config = {
     matcher: [
         // Exclure les fichiers statiques et internes

@@ -11,7 +11,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useClerk } from "@clerk/nextjs";
+import { authClient } from "@/lib/auth-client";
 import { IconLogout } from "@tabler/icons-react";
 
 interface SignOutConfirmProps {
@@ -20,7 +20,10 @@ interface SignOutConfirmProps {
 }
 
 export function SignOutConfirm({ className, children }: SignOutConfirmProps) {
-    const { signOut } = useClerk();
+    const handleSignOut = async () => {
+        await authClient.signOut();
+        window.location.assign("/sign-in");
+    };
 
     return (
         <AlertDialog>
@@ -43,7 +46,7 @@ export function SignOutConfirm({ className, children }: SignOutConfirmProps) {
                 <AlertDialogFooter>
                     <AlertDialogCancel>Annuler</AlertDialogCancel>
                     <AlertDialogAction
-                        onClick={() => signOut({ redirectUrl: "/sign-in" })}
+                        onClick={handleSignOut}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                         Se déconnecter

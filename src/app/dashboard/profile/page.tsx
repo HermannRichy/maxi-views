@@ -1,6 +1,6 @@
-"use client";
-
-import { useUser, useClerk } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -12,52 +12,13 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
-import {
-    IconLogout,
-    IconUser,
-    IconMail,
-    IconCalendar,
-    IconLoader2,
-    IconSettings,
-} from "@tabler/icons-react";
+import { IconMail, IconCalendar, IconSettings } from "@tabler/icons-react";
 import { Separator } from "@/components/ui/separator";
-import Link from "next/link";
+import { ProfileSignOutButton } from "./sign-out-button";
 
-export default function ProfilePage() {
-    const { isLoaded, user } = useUser();
-    const { signOut } = useClerk();
-
-    if (!isLoaded) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <IconLoader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background px-4">
-                <Card className="w-full max-w-md border-2 shadow-xl bg-white/5 backdrop-blur-xl border-white/10 text-center p-8">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <IconUser className="w-8 h-8 text-primary" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold mb-2 text-foreground">
-                        Non connecté
-                    </CardTitle>
-                    <CardDescription className="mb-8">
-                        Veuillez vous connecter pour accéder à votre profil.
-                    </CardDescription>
-                    <Button
-                        asChild
-                        className="w-full h-12 text-lg font-semibold"
-                    >
-                        <Link href="/sign-in">Se connecter</Link>
-                    </Button>
-                </Card>
-            </div>
-        );
-    }
+export default async function ProfilePage() {
+    const user = await getCurrentUser();
+    if (!user) redirect("/sign-in");
 
     return (
         <div className="min-h-screen bg-background py-12 px-4 relative overflow-hidden">
@@ -88,12 +49,9 @@ export default function ProfilePage() {
                     <div className="h-32 bg-gradient-to-r from-primary/40 to-primary/10 relative">
                         <div className="absolute -bottom-12 left-10">
                             <Avatar className="h-28 w-28 border-4 border-background shadow-2xl ring-4 ring-white/5">
-                                <AvatarImage src={user.imageUrl} />
+                                <AvatarImage src={user.image ?? undefined} />
                                 <AvatarFallback className="text-2xl bg-primary/20 text-primary">
-                                    {user.firstName?.charAt(0) ||
-                                        user.emailAddresses[0]?.emailAddress.charAt(
-                                            0,
-                                        )}
+                                    {(user.name ?? user.email).charAt(0).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                         </div>
@@ -102,12 +60,10 @@ export default function ProfilePage() {
                     <CardHeader className="pt-16 pb-6 px-10">
                         <div>
                             <CardTitle className="text-3xl font-bold text-foreground">
-                                {user.fullName || "Utilisateur"}
+                                {user.name || "Utilisateur"}
                             </CardTitle>
                             <CardDescription className="text-base text-primary font-medium">
-                                {user.username
-                                    ? `@${user.username}`
-                                    : user.emailAddresses[0]?.emailAddress}
+                                {user.email}
                             </CardDescription>
                         </div>
                     </CardHeader>
@@ -120,7 +76,7 @@ export default function ProfilePage() {
                                     Adresse Email
                                 </Label>
                                 <div className="px-5 py-4 bg-white/5 rounded-2xl border border-white/10 font-medium text-foreground">
-                                    {user.emailAddresses[0]?.emailAddress}
+                                    {user.email}
                                 </div>
                             </div>
 
@@ -130,9 +86,7 @@ export default function ProfilePage() {
                                     Date d&apos;inscription
                                 </Label>
                                 <div className="px-5 py-4 bg-white/5 rounded-2xl border border-white/10 font-medium text-foreground">
-                                    {new Date(
-                                        user.createdAt!,
-                                    ).toLocaleDateString("fr-FR", {
+                                    {user.createdAt.toLocaleDateString("fr-FR", {
                                         year: "numeric",
                                         month: "long",
                                         day: "numeric",
@@ -173,14 +127,7 @@ export default function ProfilePage() {
                                 {user.id}
                             </code>
                         </div>
-                        <Button
-                            variant="destructive"
-                            onClick={() => signOut({ redirectUrl: "/" })}
-                            className="h-12 px-8 rounded-xl font-bold text-base shadow-lg shadow-destructive/20"
-                        >
-                            <IconLogout className="w-5 h-5 mr-2" />
-                            Déconnexion
-                        </Button>
+                        <ProfileSignOutButton />
                     </CardFooter>
                 </Card>
 

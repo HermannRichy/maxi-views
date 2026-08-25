@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { authClient } from "@/lib/auth-client";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import {
@@ -12,6 +12,18 @@ import {
     IconArrowRight,
 } from "@tabler/icons-react";
 import { SectionBorder } from "@/components/ui/futuristic";
+
+function SignedIn({ children }: { children: React.ReactNode }) {
+    const { data: session, isPending } = authClient.useSession();
+    if (isPending || !session) return null;
+    return <>{children}</>;
+}
+
+function SignedOut({ children }: { children: React.ReactNode }) {
+    const { data: session, isPending } = authClient.useSession();
+    if (isPending || session) return null;
+    return <>{children}</>;
+}
 
 /* ─────────────────────────────────────────────────────────────────
    Data

@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSignUp, useUser } from "@clerk/nextjs";
-import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GeoCircle, GeoRing } from "@/components/ui/futuristic";
 import {
     IconBrandGoogleFilled,
-    IconBrandAppleFilled,
     IconMail,
     IconLock,
     IconFingerprint,
@@ -25,27 +23,17 @@ import {
 import { toast } from "sonner";
 
 export default function SignUpPage() {
-    const { isLoaded, signUp, setActive } = useSignUp();
-    const { isSignedIn, isLoaded: userLoaded } = useUser();
     const router = useRouter();
     const wrapRef = useRef<HTMLDivElement>(null);
+    const { data: session, isPending } = authClient.useSession();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [pendingVerification, setPendingVerification] = useState(false);
     const [code, setCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [isSocialLoading, setIsSocialLoading] = useState<
-        "google" | "apple" | null
-    >(null);
+    const [isSocialLoading, setIsSocialLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    // Redirect if user is already signed in
-    useEffect(() => {
-        if (userLoaded && isSignedIn) {
-            router.push("/dashboard/profile");
-        }
-    }, [userLoaded, isSignedIn, router]);
 
     useGSAP(
         () => {
@@ -59,95 +47,84 @@ export default function SignUpPage() {
                 delay: 0.1,
             });
         },
-        { scope: wrapRef, dependencies: [userLoaded, pendingVerification] },
+        { scope: wrapRef, dependencies: [isPending, pendingVerification] },
     );
 
     const handleEmailSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isLoaded || !signUp) return;
-
         setIsLoading(true);
         setError(null);
 
-        try {
-            await signUp.create({
-                emailAddress: email,
-                password,
-            });
+        const { error } = await authClient.signUp.email({
+            email,
+            password,
+            name: email.split("@")[0],
+        });
 
-            await signUp.prepareEmailAddressVerification({
-                strategy: "email_code",
-            });
+        if (error) {
+            const message = error.message ?? "Erreur lors de l'inscription";
+            setError(message);
+            toast.error(message);
+        } else {
             setPendingVerification(true);
             toast.info("Un code de vérification a été envoyé !");
-        } catch (err) {
-            const errorMessage = isClerkAPIResponseError(err)
-                ? err.errors[0]?.message
-                : "Erreur lors de l'inscription";
-            setError(errorMessage);
-            toast.error(errorMessage);
-        } finally {
-            setIsLoading(false);
         }
+        setIsLoading(false);
     };
 
     const handleVerification = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isLoaded || !signUp) return;
-
         setIsLoading(true);
         setError(null);
 
-        try {
-            const completeSignUp = await signUp.attemptEmailAddressVerification(
-                {
-                    code,
-                },
-            );
+        const { error } = await authClient.emailOtp.verifyEmail({
+            email,
+            otp: code,
+        });
 
-            if (completeSignUp.status === "complete") {
-                await setActive({ session: completeSignUp.createdSessionId });
-                router.push("/dashboard/profile");
-                toast.success("Compte créé avec succès !");
-            } else {
-                toast.error("Vérification incomplète. Veuillez réessayer.");
-            }
-        } catch (err) {
-            const errorMessage = isClerkAPIResponseError(err)
-                ? err.errors[0]?.message
-                : "Code invalide";
-            setError(errorMessage);
-            toast.error(errorMessage);
-        } finally {
+        if (error) {
+            const message = error.message ?? "Code invalide";
+            setError(message);
+            toast.error(message);
             setIsLoading(false);
+            return;
         }
+
+        // S'assure qu'une session est bien établie après vérification.
+        const { error: signInError } = await authClient.signIn.email({
+            email,
+            password,
+        });
+
+        if (signInError) {
+            toast.success("Compte créé ! Connectez-vous pour continuer.");
+            window.location.assign("/sign-in");
+            return;
+        }
+
+        toast.success("Compte créé avec succès !");
+        window.location.assign("/dashboard/profile");
     };
 
-    const handleSocialSignUp = async (
-        strategy: "oauth_google" | "oauth_apple",
-    ) => {
-        if (!isLoaded || !signUp) return;
-
-        setIsSocialLoading(strategy === "oauth_google" ? "google" : "apple");
+    const handleGoogleSignUp = async () => {
+        setIsSocialLoading(true);
         setError(null);
 
         try {
-            await signUp.authenticateWithRedirect({
-                strategy,
-                redirectUrl: "/sso-callback",
-                redirectUrlComplete: "/dashboard/profile",
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/dashboard/profile",
             });
         } catch (err) {
-            const errorMessage = isClerkAPIResponseError(err)
-                ? err.errors[0]?.message
-                : "Erreur lors de l'inscription";
-            setError(errorMessage);
-            toast.error(errorMessage);
-            setIsSocialLoading(null);
+            const message =
+                err instanceof Error ? err.message : "Erreur lors de l'inscription";
+            setError(message);
+            toast.error(message);
+            setIsSocialLoading(false);
         }
     };
 
-    if (!userLoaded) {
+    if (isPending) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
@@ -155,7 +132,10 @@ export default function SignUpPage() {
         );
     }
 
-    if (isSignedIn) return null;
+    if (session && !pendingVerification) {
+        router.push("/dashboard/profile");
+        return null;
+    }
 
     if (pendingVerification) {
         return (
@@ -177,6 +157,15 @@ export default function SignUpPage() {
                             </span>
                         </p>
                     </div>
+
+                    {error && (
+                        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-2xl flex items-start gap-3">
+                            <IconAlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+                            <p className="text-sm text-destructive font-medium">
+                                {error}
+                            </p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleVerification} className="space-y-6">
                         <div className="space-y-2 text-center">
@@ -279,35 +268,19 @@ export default function SignUpPage() {
                             </div>
                         )}
 
-                        <div className="space-y-4 mb-8">
+                        <div className="mb-8">
                             <Button
-                                onClick={() => handleSocialSignUp("oauth_google")}
-                                disabled={isSocialLoading !== null || isLoading}
+                                onClick={handleGoogleSignUp}
+                                disabled={isSocialLoading || isLoading}
                                 variant="outline"
                                 className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
                             >
-                                {isSocialLoading === "google" ? (
+                                {isSocialLoading ? (
                                     <IconLoader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <>
                                         <IconBrandGoogleFilled className="mr-2 h-5 w-5" />{" "}
                                         Continuer avec Google
-                                    </>
-                                )}
-                            </Button>
-
-                            <Button
-                                onClick={() => handleSocialSignUp("oauth_apple")}
-                                disabled={isSocialLoading !== null || isLoading}
-                                variant="outline"
-                                className="w-full border-white/10 hover:bg-white/5 h-12 rounded-xl text-base font-medium transition-all"
-                            >
-                                {isSocialLoading === "apple" ? (
-                                    <IconLoader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        <IconBrandAppleFilled className="mr-2 h-5 w-5" />{" "}
-                                        Continuer avec Apple
                                     </>
                                 )}
                             </Button>
@@ -339,7 +312,7 @@ export default function SignUpPage() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all"
                                     required
-                                    disabled={isLoading || isSocialLoading !== null}
+                                    disabled={isLoading || isSocialLoading}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -357,13 +330,14 @@ export default function SignUpPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/50 transition-all"
                                     required
-                                    disabled={isLoading || isSocialLoading !== null}
+                                    minLength={8}
+                                    disabled={isLoading || isSocialLoading}
                                 />
                             </div>
                             <Button
                                 type="submit"
                                 className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary/20 mt-4 active:scale-[0.98] transition-transform"
-                                disabled={isLoading || isSocialLoading !== null}
+                                disabled={isLoading || isSocialLoading}
                             >
                                 {isLoading ? (
                                     <IconLoader2 className="h-5 w-5 animate-spin" />

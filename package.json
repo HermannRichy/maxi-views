@@ -10,8 +10,6 @@
         "postinstall": "prisma generate"
     },
     "dependencies": {
-        "@clerk/nextjs": "^6.39.6",
-        "@emailjs/browser": "^4.4.1",
         "@gsap/react": "^2.1.2",
         "@hookform/resolvers": "^5.9.1",
         "@prisma/adapter-pg": "^7.9.1",
