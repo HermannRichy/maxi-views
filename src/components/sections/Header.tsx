@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Zap, Menu, X, ArrowRight } from "lucide-react";
+import { IconEyeShare } from "@tabler/icons-react";
 import {
     CornerBracket,
     CLIP_TR_SM,
@@ -135,7 +136,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                             className="w-6 h-6 bg-primary flex items-center justify-center"
                             style={{ clipPath: CLIP_TR_SM }}
                         >
-                            <Zap className="w-3 h-3 text-primary-foreground" />
+                            <IconEyeShare className="w-3 h-3 text-primary-foreground" />
                         </div>
                         <span className="font-display font-bold text-sm">
                             Maxi<span className="text-primary"> Views</span>
@@ -239,7 +240,7 @@ export default function Header() {
                                 className="w-8 h-8 bg-primary flex items-center justify-center"
                                 style={{ clipPath: CLIP_TR_SM }}
                             >
-                                <Zap className="w-4 h-4 text-primary-foreground" />
+                                <IconEyeShare className="w-4 h-4 text-primary-foreground" />
                             </div>
                             <CornerBracket
                                 size={6}

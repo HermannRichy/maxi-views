@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { Zap, ShieldCheck, LayoutDashboard, ShoppingCart } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, ShoppingCart } from "lucide-react";
+import { IconEyeShare } from "@tabler/icons-react";
 import { SignOutConfirm } from "@/components/ui/sign-out-confirm";
 import { CLIP_TR_SM } from "@/components/ui/futuristic";
 
@@ -24,7 +25,7 @@ export default async function AdminLayout({
                             className="w-7 h-7 bg-primary flex items-center justify-center"
                             style={{ clipPath: CLIP_TR_SM }}
                         >
-                            <Zap className="w-3.5 h-3.5 text-primary-foreground" />
+                            <IconEyeShare className="w-3.5 h-3.5 text-primary-foreground" />
                         </div>
                         <span className="font-display font-bold text-sm">
                             Maxi<span className="text-primary"> Views</span>

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Zap, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { IconEyeShare } from "@tabler/icons-react";
 import {
     CornerBracket,
     SectionBorder,
@@ -30,7 +31,7 @@ export default function Footer() {
                                 className="w-8 h-8 bg-primary flex items-center justify-center"
                                 style={{ clipPath: CLIP_TR_SM }}
                             >
-                                <Zap className="w-4 h-4 text-primary-foreground" />
+                                <IconEyeShare className="w-4 h-4 text-primary-foreground" />
                             </div>
                             <span className="font-display text-xl font-bold">
                                 Maxi<span className="text-primary"> Views</span>
