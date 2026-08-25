@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
             url: token.url,
             reference,
         });
-    } catch (err: any) {
-        if (err.message === "UNAUTHENTICATED") {
+    } catch (err) {
+        if (err instanceof Error && err.message === "UNAUTHENTICATED") {
             return NextResponse.json(
                 { error: "Non authentifié" },
                 { status: 401 },

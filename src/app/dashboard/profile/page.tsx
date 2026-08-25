@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
     IconLogout,
     IconUser,
@@ -128,7 +127,7 @@ export default function ProfilePage() {
                             <div className="space-y-3">
                                 <Label className="text-muted-foreground text-sm font-semibold flex items-center gap-2">
                                     <IconCalendar className="w-4 h-4 opacity-70" />{" "}
-                                    Date d'inscription
+                                    Date d&apos;inscription
                                 </Label>
                                 <div className="px-5 py-4 bg-white/5 rounded-2xl border border-white/10 font-medium text-foreground">
                                     {new Date(

@@ -20,8 +20,8 @@ export async function GET() {
             balance: user.balance,
             transactions,
         });
-    } catch (err: any) {
-        if (err.message === "UNAUTHENTICATED") {
+    } catch (err) {
+        if (err instanceof Error && err.message === "UNAUTHENTICATED") {
             return NextResponse.json(
                 { error: "Non authentifié" },
                 { status: 401 },

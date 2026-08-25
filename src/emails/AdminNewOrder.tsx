@@ -27,7 +27,7 @@ export const AdminNewOrderEmail = ({
                 🚨 Nouvelle commande !
             </Heading>
             <Text className="text-black text-[14px] leading-[24px]">
-                Un client vient de passer une nouvelle commande. L'argent a déjà
+                Un client vient de passer une nouvelle commande. L&apos;argent a déjà
                 été débité de son solde.
             </Text>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSignIn, useUser } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -59,9 +60,10 @@ export default function LoginPage() {
                     "Échec de la connexion. Veuillez vérifier vos identifiants.",
                 );
             }
-        } catch (err: any) {
-            const errorMessage =
-                err?.errors?.[0]?.message || "Erreur lors de la connexion";
+        } catch (err) {
+            const errorMessage = isClerkAPIResponseError(err)
+                ? err.errors[0]?.message
+                : "Erreur lors de la connexion";
             setError(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -86,9 +88,10 @@ export default function LoginPage() {
                 redirectUrl: `${baseUrl}/sso-callback`,
                 redirectUrlComplete: "/dashboard",
             });
-        } catch (err: any) {
-            const errorMessage =
-                err?.errors?.[0]?.message || "Erreur lors de la connexion";
+        } catch (err) {
+            const errorMessage = isClerkAPIResponseError(err)
+                ? err.errors[0]?.message
+                : "Erreur lors de la connexion";
             setError(errorMessage);
             toast.error(errorMessage);
             setIsSocialLoading(null);
@@ -252,7 +255,7 @@ export default function LoginPage() {
                         href="/"
                         className="text-xs text-muted-foreground/50 hover:text-foreground transition-colors font-medium"
                     >
-                        ← Retour à l'accueil
+                        ← Retour à l&apos;accueil
                     </Link>
                 </div>
             </div>

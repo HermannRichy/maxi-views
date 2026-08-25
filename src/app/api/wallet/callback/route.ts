@@ -14,6 +14,14 @@ import { sendDepositConfirmed } from "@/lib/emails";
 
 const SIGNATURE_TOLERANCE_SECONDS = 300; // 5 minutes
 
+interface FedaPayWebhookPayload {
+    name?: string;
+    entity?: {
+        status?: string;
+        custom_metadata?: { reference?: string };
+    };
+}
+
 interface ParsedSignatureHeader {
     timestamp: number;
     signatures: string[];
@@ -112,7 +120,7 @@ async function handleCallback(req: NextRequest) {
                     try {
                         const transaction = await Transaction.retrieve(parseInt(id, 10));
                         finalStatus = transaction.status === "approved" ? "success" : "failed";
-                    } catch (error) {
+                    } catch {
                         finalStatus = "failed";
                     }
                 }
@@ -161,9 +169,9 @@ async function handleCallback(req: NextRequest) {
         }
 
         // Parsing du body
-        let body: any;
+        let body: FedaPayWebhookPayload;
         try {
-            body = JSON.parse(payload);
+            body = JSON.parse(payload) as FedaPayWebhookPayload;
         } catch {
             return NextResponse.json(
                 { error: "Payload JSON invalide" },

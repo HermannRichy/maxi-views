@@ -23,13 +23,13 @@ export async function GET() {
         });
 
         return NextResponse.json({ orders });
-    } catch (err: any) {
-        if (err.message === "UNAUTHENTICATED")
+    } catch (err) {
+        if (err instanceof Error && err.message === "UNAUTHENTICATED")
             return NextResponse.json(
                 { error: "Non authentifié" },
                 { status: 401 },
             );
-        if (err.message === "FORBIDDEN")
+        if (err instanceof Error && err.message === "FORBIDDEN")
             return NextResponse.json(
                 { error: "Accès refusé" },
                 { status: 403 },

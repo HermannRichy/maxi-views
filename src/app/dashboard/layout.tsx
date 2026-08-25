@@ -6,8 +6,6 @@ import {
     Wallet,
     ShoppingCart,
     Plus,
-    Settings,
-    LogOut,
     Zap,
     ShieldCheck,
 } from "lucide-react";

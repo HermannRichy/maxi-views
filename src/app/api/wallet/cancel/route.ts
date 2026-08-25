@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json({ ok: true });
-    } catch (err: any) {
-        if (err.message === "UNAUTHENTICATED") {
+    } catch (err) {
+        if (err instanceof Error && err.message === "UNAUTHENTICATED") {
             return NextResponse.json(
                 { error: "Non authentifié" },
                 { status: 401 },

@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useSignUp, useUser } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import {
     IconBrandGoogleFilled,
     IconBrandAppleFilled,
@@ -57,9 +58,10 @@ export default function SignUpPage() {
             });
             setPendingVerification(true);
             toast.info("Un code de vérification a été envoyé !");
-        } catch (err: any) {
-            const errorMessage =
-                err?.errors?.[0]?.message || "Erreur lors de l'inscription";
+        } catch (err) {
+            const errorMessage = isClerkAPIResponseError(err)
+                ? err.errors[0]?.message
+                : "Erreur lors de l'inscription";
             setError(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -88,8 +90,10 @@ export default function SignUpPage() {
             } else {
                 toast.error("Vérification incomplète. Veuillez réessayer.");
             }
-        } catch (err: any) {
-            const errorMessage = err?.errors?.[0]?.message || "Code invalide";
+        } catch (err) {
+            const errorMessage = isClerkAPIResponseError(err)
+                ? err.errors[0]?.message
+                : "Code invalide";
             setError(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -111,9 +115,10 @@ export default function SignUpPage() {
                 redirectUrl: "/sso-callback",
                 redirectUrlComplete: "/dashboard/profile",
             });
-        } catch (err: any) {
-            const errorMessage =
-                err?.errors?.[0]?.message || "Erreur lors de l'inscription";
+        } catch (err) {
+            const errorMessage = isClerkAPIResponseError(err)
+                ? err.errors[0]?.message
+                : "Erreur lors de l'inscription";
             setError(errorMessage);
             toast.error(errorMessage);
             setIsSocialLoading(null);
@@ -198,7 +203,7 @@ export default function SignUpPage() {
                             Créer un compte
                         </h1>
                         <p className="text-muted-foreground text-sm">
-                            Rejoignez l'aventure en quelques secondes
+                            Rejoignez l&apos;aventure en quelques secondes
                         </p>
                     </div>
 

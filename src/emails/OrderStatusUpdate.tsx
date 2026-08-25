@@ -60,7 +60,7 @@ export const OrderStatusUpdateEmail = ({
 
             {(status === "CANCELLED" || status === "FAILED") && (
                 <Text className="text-black text-[14px] leading-[24px]">
-                    Nous n'avons pas pu compléter cette commande. Le montant a
+                    Nous n&apos;avons pas pu compléter cette commande. Le montant a
                     été automatiquement recrédité sur votre portefeuille Maxi
                     Views. Vous pouvez repasser commande avec un autre lien.
                 </Text>
@@ -76,7 +76,7 @@ export const OrderStatusUpdateEmail = ({
             </Section>
 
             <Text className="text-black text-[14px] leading-[24px]">
-                L'équipe Maxi Views
+                L&apos;équipe Maxi Views
             </Text>
         </Layout>
     );

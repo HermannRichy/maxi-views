@@ -102,8 +102,8 @@ export async function POST(req: NextRequest) {
         ]).catch(console.error);
 
         return NextResponse.json({ order }, { status: 201 });
-    } catch (err: any) {
-        if (err.message === "UNAUTHENTICATED") {
+    } catch (err) {
+        if (err instanceof Error && err.message === "UNAUTHENTICATED") {
             return NextResponse.json(
                 { error: "Non authentifié" },
                 { status: 401 },
@@ -127,8 +127,8 @@ export async function GET() {
         });
 
         return NextResponse.json({ orders });
-    } catch (err: any) {
-        if (err.message === "UNAUTHENTICATED") {
+    } catch (err) {
+        if (err instanceof Error && err.message === "UNAUTHENTICATED") {
             return NextResponse.json(
                 { error: "Non authentifié" },
                 { status: 401 },

@@ -62,11 +62,11 @@ export const OrderConfirmationEmail = ({
             </Section>
 
             <Text className="text-black text-[14px] leading-[24px]">
-                Vous pouvez suivre l'état d'avancement de votre commande
+                Vous pouvez suivre l&apos;état d&apos;avancement de votre commande
                 directement depuis votre tableau de bord Maxi Views.
             </Text>
             <Text className="text-black text-[14px] leading-[24px]">
-                L'équipe Maxi Views
+                L&apos;équipe Maxi Views
             </Text>
         </Layout>
     );

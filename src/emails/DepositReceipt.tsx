@@ -54,7 +54,7 @@ export const DepositReceiptEmail = ({
             <Text className="text-black text-[14px] leading-[24px]">
                 Merci pour votre confiance,
                 <br />
-                L'équipe Maxi Views
+                L&apos;équipe Maxi Views
             </Text>
         </Layout>
     );
