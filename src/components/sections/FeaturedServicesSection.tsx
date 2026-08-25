@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { FuturisticCard, SectionTitle, SectionBorder } from "@/components/ui/futuristic";
+import { FuturisticCard, SectionTitle, SectionBorder, GlowOrb } from "@/components/ui/futuristic";
 import { IconArrowRight } from "@tabler/icons-react";
 import { FEATURED_SERVICES } from "@/data/landing";
 
 export default function FeaturedServicesSection() {
     return (
-        <section id="services" className="py-24 bg-muted/20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="services" className="relative overflow-hidden py-24 bg-muted/20">
+            <GlowOrb className="bottom-0 right-[10%] -z-10" size={400} blur={100} />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                 <SectionTitle subtitle="Les services les plus commandés par nos clients, à des prix imbattables.">
                     Services <span className="text-primary">populaires</span>
                 </SectionTitle>

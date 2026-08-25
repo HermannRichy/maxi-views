@@ -1,10 +1,12 @@
-import { FuturisticCard, SectionTitle, SectionBorder } from "@/components/ui/futuristic";
+import { FuturisticCard, SectionTitle, SectionBorder, Doodle, RingOutline } from "@/components/ui/futuristic";
 import { IconSparkles } from "@tabler/icons-react";
 import { NETWORKS } from "@/data/landing";
 
 export default function NetworksSection() {
     return (
-        <section id="reseaux" className="py-24">
+        <section id="reseaux" className="relative overflow-hidden py-24">
+            <Doodle className="absolute top-6 right-8 hidden md:block" />
+            <RingOutline className="-bottom-24 -left-24" size={260} />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <SectionTitle subtitle="Gérez la croissance de tous vos profils depuis un seul tableau de bord.">
                     7 réseaux,{" "}

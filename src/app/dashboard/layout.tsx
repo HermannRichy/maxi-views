@@ -10,6 +10,7 @@ import {
     IconShieldCheck,
 } from "@tabler/icons-react";
 import { SignOutConfirm } from "@/components/ui/sign-out-confirm";
+import { GlowOrb } from "@/components/ui/futuristic";
 
 const NAV_ITEMS = [
     { href: "/dashboard", label: "Tableau de bord", Icon: IconLayoutDashboard },
@@ -95,7 +96,8 @@ export default async function DashboardLayout({
             </aside>
 
             {/* ── Main ── */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden">
+                <GlowOrb className="top-0 right-0 -z-10" size={400} blur={120} />
                 {/* Mobile top bar */}
                 <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-white/10 bg-card">
                     <Link href="/" className="flex items-center gap-2">

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { STATS } from "@/data/landing";
-import { FuturisticCard, SectionBorder } from "@/components/ui/futuristic";
+import { FuturisticCard, SectionBorder, Doodle } from "@/components/ui/futuristic";
 
 /* ─────────────────────────────────────────────────────────────────
    Hook: animates a number from 0 → target when element is visible
@@ -75,7 +75,8 @@ function StatCard({
 ───────────────────────────────────────────────────────────────── */
 export default function StatsSection() {
     return (
-        <section className="py-16">
+        <section className="relative overflow-hidden py-16">
+            <Doodle className="absolute -top-2 left-[10%] opacity-60 hidden md:block" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {STATS.map((s, i) => (

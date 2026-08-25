@@ -1,11 +1,12 @@
-import { FuturisticCard, SectionTitle, SectionBorder } from "@/components/ui/futuristic";
+import { FuturisticCard, SectionTitle, SectionBorder, GlowOrb } from "@/components/ui/futuristic";
 import { IconStarFilled } from "@tabler/icons-react";
 import { TESTIMONIALS } from "@/data/landing";
 
 export default function TestimonialsSection() {
     return (
-        <section className="py-24">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="relative overflow-hidden py-24">
+            <GlowOrb className="top-0 right-0 -z-10" size={400} blur={100} />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                 <SectionTitle>
                     Ce que disent{" "}
                     <span className="text-primary">nos clients</span>

@@ -8,6 +8,7 @@ import {
     IconShoppingCart,
 } from "@tabler/icons-react";
 import { SignOutConfirm } from "@/components/ui/sign-out-confirm";
+import { GlowOrb } from "@/components/ui/futuristic";
 
 export default async function AdminLayout({
     children,
@@ -68,7 +69,10 @@ export default async function AdminLayout({
                 </div>
             </aside>
 
-            <main className="flex-1 p-6 overflow-auto">{children}</main>
+            <main className="relative flex-1 p-6 overflow-auto">
+                <GlowOrb className="top-0 right-0 -z-10" size={400} blur={120} />
+                {children}
+            </main>
         </div>
     );
 }
