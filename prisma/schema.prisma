@@ -40,6 +40,8 @@ model User {
   image         String?
   role          Role          @default(USER)
   balance       Int           @default(0) // FCFA
+  banned        Boolean       @default(false)
+  banReason     String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

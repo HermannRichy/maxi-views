@@ -24,12 +24,25 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
     IconLoader2,
     IconShieldCheck,
     IconShieldOff,
     IconWalletOff,
     IconCircleCheck,
     IconCircleX,
+    IconBan,
+    IconTrash,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -40,6 +53,8 @@ type AdminUser = {
     role: "USER" | "ADMIN";
     balance: number;
     emailVerified: boolean;
+    banned: boolean;
+    banReason: string | null;
     createdAt: string;
     _count: { orders: number; transactions: number };
 };
@@ -130,6 +145,149 @@ function AdjustBalanceDialog({
     );
 }
 
+function BanUserDialog({
+    user,
+    onUpdated,
+}: {
+    user: AdminUser;
+    onUpdated: (u: AdminUser) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const [reason, setReason] = useState("");
+    const [saving, setSaving] = useState(false);
+
+    const submit = async () => {
+        setSaving(true);
+        try {
+            const res = await fetch(`/api/admin/users/${user.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ banned: true, banReason: reason || undefined }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data.error);
+                return;
+            }
+            toast.success("Utilisateur banni");
+            onUpdated(data.user);
+            setOpen(false);
+            setReason("");
+        } catch {
+            toast.error("Erreur lors du bannissement");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                    <IconBan data-icon="inline-start" />
+                    Bannir
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Bannir {user.name ?? user.email}</DialogTitle>
+                    <DialogDescription>
+                        Toutes ses sessions actives seront immédiatement révoquées et
+                        il ne pourra plus se reconnecter.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-1.5">
+                    <Label htmlFor="banReason">Motif (optionnel)</Label>
+                    <Input
+                        id="banReason"
+                        placeholder="ex: violation des CGU"
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="destructive" onClick={submit} disabled={saving}>
+                        {saving && <IconLoader2 className="animate-spin" />}
+                        Confirmer le bannissement
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function DeleteUserButton({
+    user,
+    onDeleted,
+}: {
+    user: AdminUser;
+    onDeleted: (id: string) => void;
+}) {
+    const [deleting, setDeleting] = useState(false);
+    const hasHistory = user._count.orders > 0 || user._count.transactions > 0;
+
+    const submit = async () => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/admin/users/${user.id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data.error);
+                return;
+            }
+            toast.success("Utilisateur supprimé");
+            onDeleted(user.id);
+        } catch {
+            toast.error("Erreur lors de la suppression");
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={hasHistory}
+                    title={
+                        hasHistory
+                            ? "Impossible de supprimer un compte avec des commandes ou transactions — bannissez-le à la place"
+                            : undefined
+                    }
+                >
+                    <IconTrash data-icon="inline-start" />
+                    Supprimer
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>
+                        Supprimer {user.name ?? user.email} ?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Cette action est irréversible. Le compte, sa session et ses
+                        identifiants de connexion seront définitivement supprimés.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={submit}
+                        disabled={deleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                        {deleting ? "Suppression..." : "Supprimer définitivement"}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -146,6 +304,10 @@ export default function AdminUsersPage() {
         setUsers((prev) =>
             prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)),
         );
+    };
+
+    const handleDeleted = (id: string) => {
+        setUsers((prev) => prev.filter((u) => u.id !== id));
     };
 
     const toggleRole = async (user: AdminUser) => {
@@ -170,6 +332,28 @@ export default function AdminUsersPage() {
             handleUpdated(data.user);
         } catch {
             toast.error("Erreur lors de la mise à jour du rôle");
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
+    const unban = async (user: AdminUser) => {
+        setUpdatingId(user.id);
+        try {
+            const res = await fetch(`/api/admin/users/${user.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ banned: false }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data.error);
+                return;
+            }
+            toast.success("Utilisateur débanni");
+            handleUpdated(data.user);
+        } catch {
+            toast.error("Erreur lors du débannissement");
         } finally {
             setUpdatingId(null);
         }
@@ -218,17 +402,27 @@ export default function AdminUsersPage() {
                                     </p>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge
-                                        variant={
-                                            user.role === "ADMIN"
-                                                ? "default"
-                                                : "secondary"
-                                        }
-                                    >
-                                        {user.role === "ADMIN"
-                                            ? "Admin"
-                                            : "Utilisateur"}
-                                    </Badge>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        <Badge
+                                            variant={
+                                                user.role === "ADMIN"
+                                                    ? "default"
+                                                    : "secondary"
+                                            }
+                                        >
+                                            {user.role === "ADMIN"
+                                                ? "Admin"
+                                                : "Utilisateur"}
+                                        </Badge>
+                                        {user.banned && (
+                                            <Badge
+                                                variant="destructive"
+                                                title={user.banReason ?? undefined}
+                                            >
+                                                Banni
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     {user.emailVerified ? (
@@ -254,7 +448,7 @@ export default function AdminUsersPage() {
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <div className="flex items-center justify-end gap-2">
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
                                         <AdjustBalanceDialog
                                             user={user}
                                             onUpdated={handleUpdated}
@@ -276,6 +470,30 @@ export default function AdminUsersPage() {
                                                 ? "Retirer admin"
                                                 : "Promouvoir"}
                                         </Button>
+                                        {user.banned ? (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => unban(user)}
+                                                disabled={updatingId === user.id}
+                                            >
+                                                {updatingId === user.id ? (
+                                                    <IconLoader2 data-icon="inline-start" className="animate-spin" />
+                                                ) : (
+                                                    <IconShieldCheck data-icon="inline-start" />
+                                                )}
+                                                Débannir
+                                            </Button>
+                                        ) : (
+                                            <BanUserDialog
+                                                user={user}
+                                                onUpdated={handleUpdated}
+                                            />
+                                        )}
+                                        <DeleteUserButton
+                                            user={user}
+                                            onDeleted={handleDeleted}
+                                        />
                                     </div>
                                 </TableCell>
                             </TableRow>

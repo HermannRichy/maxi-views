@@ -18,6 +18,8 @@ export async function GET() {
                 role: true,
                 balance: true,
                 emailVerified: true,
+                banned: true,
+                banReason: true,
                 createdAt: true,
                 _count: { select: { orders: true, transactions: true } },
             },

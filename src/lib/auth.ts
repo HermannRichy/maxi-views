@@ -41,6 +41,24 @@ export const auth = betterAuth({
         },
     },
 
+    // Bloque la création d'une nouvelle session pour un compte banni.
+    // Les sessions déjà ouvertes au moment du bannissement sont révoquées
+    // explicitement côté API (/api/admin/users/[id]), donc aucune session
+    // valide ne peut survivre à un bannissement.
+    databaseHooks: {
+        session: {
+            create: {
+                before: async (session) => {
+                    const user = await prisma.user.findUnique({
+                        where: { id: session.userId },
+                        select: { banned: true },
+                    });
+                    if (user?.banned) return false;
+                },
+            },
+        },
+    },
+
     plugins: [
         emailOTP({
             otpLength: 6,
