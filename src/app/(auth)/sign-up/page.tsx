@@ -114,7 +114,7 @@ export default function SignUpPage() {
         }
 
         toast.success("Compte créé avec succès !");
-        window.location.assign("/dashboard/profile");
+        window.location.assign("/dashboard/new-order");
     };
 
     const handleGoogleSignUp = async () => {
@@ -124,7 +124,7 @@ export default function SignUpPage() {
         try {
             await authClient.signIn.social({
                 provider: "google",
-                callbackURL: "/dashboard/profile",
+                callbackURL: "/dashboard/new-order",
             });
         } catch (err) {
             const message =
@@ -144,7 +144,7 @@ export default function SignUpPage() {
     }
 
     if (session && !pendingVerification) {
-        router.push("/dashboard/profile");
+        router.push("/dashboard/new-order");
         return null;
     }
 
