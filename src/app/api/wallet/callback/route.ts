@@ -1,177 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { sendDepositConfirmed } from "@/lib/emails";
+import { checkFeexPayStatus } from "@/lib/feexpay";
 
 /* ─────────────────────────────────────────────────────────────────
-   GET|POST /api/wallet/callback
-   Webhook FedaPay : crédite le solde utilisateur sur paiement réussi.
-   Cette route est PUBLIQUE (pas de auth Clerk).
+   POST /api/wallet/callback
+   Webhook FeexPay : crédite le solde utilisateur sur paiement réussi.
+   Cette route est PUBLIQUE (pas d'auth).
 
-   Format header X-FEDAPAY-SIGNATURE : t=<timestamp>,s=<hmac_hex>
-   La signature HMAC-SHA256 est calculée sur "<timestamp>.<payload_brut>".
+   FeexPay ne documente aucun mécanisme de signature pour ce webhook
+   (contrairement aux payouts, protégés par liste d'IP). Par prudence,
+   on ne fait jamais confiance au statut envoyé dans le payload brut :
+   on rappelle l'API FeexPay (authentifiée par notre clé secrète) pour
+   obtenir le statut réel avant de créditer quoi que ce soit.
 ───────────────────────────────────────────────────────────────── */
 
-const SIGNATURE_TOLERANCE_SECONDS = 300; // 5 minutes
-
-interface FedaPayWebhookPayload {
-    name?: string;
-    entity?: {
-        status?: string;
-        custom_metadata?: { reference?: string };
-    };
+interface FeexPayWebhookPayload {
+    reference?: string;
+    order_id?: string;
+    status?: string;
+    amount?: number;
 }
 
-interface ParsedSignatureHeader {
-    timestamp: number;
-    signatures: string[];
-}
-
-function parseSignatureHeader(header: string): ParsedSignatureHeader | null {
-    const result: ParsedSignatureHeader = { timestamp: -1, signatures: [] };
-
-    for (const part of header.split(",")) {
-        const [key, value] = part.split("=");
-        if (key === "t") {
-            result.timestamp = parseInt(value, 10);
-        } else if (key === "s") {
-            result.signatures.push(value);
-        }
-    }
-
-    if (result.timestamp === -1 || result.signatures.length === 0) {
-        return null;
-    }
-
-    return result;
-}
-
-function verifyFedaPaySignature(
-    payload: string,
-    header: string,
-    secret: string,
-): { valid: boolean; error?: string } {
-    const parsed = parseSignatureHeader(header);
-
-    if (!parsed) {
-        return {
-            valid: false,
-            error: "Impossible de parser le header de signature",
-        };
-    }
-
-    // Vérification de la tolérance temporelle (anti-replay)
-    const now = Math.floor(Date.now() / 1000);
-    if (now - parsed.timestamp > SIGNATURE_TOLERANCE_SECONDS) {
-        return {
-            valid: false,
-            error: "Timestamp trop ancien (possible attaque par replay)",
-        };
-    }
-
-    // FedaPay signe sur "<timestamp>.<payload_brut>"
-    const signedPayload = `${parsed.timestamp}.${payload}`;
-    const expectedSignature = crypto
-        .createHmac("sha256", secret)
-        .update(signedPayload, "utf8")
-        .digest("hex");
-
-    const signatureFound = parsed.signatures.some((sig) => {
-        try {
-            const sigBuf = Buffer.from(sig, "utf8");
-            const expectedBuf = Buffer.from(expectedSignature, "utf8");
-            return (
-                sigBuf.length === expectedBuf.length &&
-                crypto.timingSafeEqual(sigBuf, expectedBuf)
-            );
-        } catch {
-            return false;
-        }
-    });
-
-    if (!signatureFound) {
-        return { valid: false, error: "Signature invalide" };
-    }
-
-    return { valid: true };
-}
-
-async function handleCallback(req: NextRequest) {
+export async function POST(req: NextRequest) {
     try {
-        // ── GET : redirect navigateur depuis FedaPay ──────────────────────
-        if (req.method === "GET") {
-            // Import FedaPay dynamiquement pour l'utiliser dans la vérification
-            const FedaPayModule = await import("fedapay");
-            const { FedaPay, Transaction } = FedaPayModule.default || FedaPayModule;
-
-            const urlStatus = req.nextUrl.searchParams.get("status");
-            const id = req.nextUrl.searchParams.get("id");
-
-            let finalStatus = "";
-
-            if (urlStatus && id) {
-                const fedapaySecret = process.env.FEDAPAY_SECRET_KEY;
-                if (fedapaySecret) {
-                    FedaPay.setApiKey(fedapaySecret);
-                    FedaPay.setEnvironment(
-                        fedapaySecret.includes("live") ? "live" : "sandbox"
-                    );
-
-                    try {
-                        const transaction = await Transaction.retrieve(parseInt(id, 10));
-                        finalStatus = transaction.status === "approved" ? "success" : "failed";
-                    } catch {
-                        finalStatus = "failed";
-                    }
-                }
-            }
-
-            // Utilisation de la structure URL standard (sécurisé, évite les double-slash)
-            const redirectUrl = new URL("/dashboard/wallet", req.url);
-            
-            if (finalStatus) {
-                redirectUrl.searchParams.set("paymentStatus", finalStatus);
-            }
-
-            // 303 See Other ou 302 Found pour explicitement signifier une redirection "propre"
-            // au lieu du 307 Temporary Redirect par défaut de Next.js
-            return NextResponse.redirect(redirectUrl.toString(), { status: 303 });
-        }
-
-        // ── POST : webhook FedaPay ────────────────────────────────────────
-        const signatureHeader = req.headers.get("x-fedapay-signature");
-        const payload = await req.text();
-
-        if (!signatureHeader) {
-            return NextResponse.json(
-                { error: "Header de signature manquant" },
-                { status: 400 },
-            );
-        }
-
-        const secret = process.env.FEDAPAY_WEBHOOK_SECRET;
-        if (!secret) {
-            return NextResponse.json(
-                { error: "Webhook FedaPay non configuré" },
-                { status: 503 },
-            );
-        }
-
-        // Vérification de la signature
-        const { valid, error: sigError } = verifyFedaPaySignature(
-            payload,
-            signatureHeader,
-            secret,
-        );
-        if (!valid) {
-            console.warn("Webhook FedaPay — signature rejetée :", sigError);
-            return NextResponse.json({ error: sigError }, { status: 400 });
-        }
-
-        // Parsing du body
-        let body: FedaPayWebhookPayload;
+        let body: FeexPayWebhookPayload;
         try {
-            body = JSON.parse(payload) as FedaPayWebhookPayload;
+            body = (await req.json()) as FeexPayWebhookPayload;
         } catch {
             return NextResponse.json(
                 { error: "Payload JSON invalide" },
@@ -179,17 +34,7 @@ async function handleCallback(req: NextRequest) {
             );
         }
 
-        const eventName = body?.name as string | undefined;
-
-        // Filtrage : on ne traite que les événements transaction.*
-        if (!eventName || !eventName.startsWith("transaction.")) {
-            return NextResponse.json({ ok: true, message: "Événement ignoré" });
-        }
-
-        const reference: string | null =
-            body?.entity?.custom_metadata?.reference ?? null;
-        const status: string | null = body?.entity?.status ?? null;
-
+        const reference = body.reference ?? body.order_id ?? null;
         if (!reference) {
             return NextResponse.json(
                 { error: "Référence manquante dans le payload" },
@@ -197,7 +42,6 @@ async function handleCallback(req: NextRequest) {
             );
         }
 
-        // Récupération de la transaction en base
         const transaction = await prisma.transaction.findUnique({
             where: { reference },
             include: { user: true },
@@ -211,30 +55,25 @@ async function handleCallback(req: NextRequest) {
         }
 
         // Idempotence : ne pas retraiter une transaction déjà finalisée
-        // Exception : un remboursement peut arriver après COMPLETED
-        const isRefundEvent = (status ?? "").toLowerCase() === "refunded";
-        if (
-            (transaction.status === "COMPLETED" && !isRefundEvent) ||
-            transaction.status === "FAILED"
-        ) {
+        if (transaction.status !== "PENDING") {
             return NextResponse.json({ ok: true, message: "Déjà traité" });
         }
 
-        const normalizedStatus = (status ?? "").toLowerCase();
-        const isSuccess = normalizedStatus === "approved";
-        const isFailureTerminal = [
-            "declined",
-            "canceled",
-            "cancelled",
-            "failed",
-            "expired", // transaction.expired → dépôt expiré sans paiement
-            "deleted", // transaction.deleted → supprimée côté FedaPay
-        ].includes(normalizedStatus);
+        // Ne jamais faire confiance au payload brut : on revérifie
+        // directement auprès de FeexPay avec notre clé secrète.
+        let verifiedStatus: string;
+        try {
+            const verified = await checkFeexPayStatus(reference);
+            verifiedStatus = verified.status;
+        } catch (err) {
+            console.error("Vérification statut FeexPay échouée:", err);
+            return NextResponse.json(
+                { error: "Impossible de vérifier le statut" },
+                { status: 502 },
+            );
+        }
 
-        const isRefunded = normalizedStatus === "refunded";
-
-        // ── Paiement approuvé ─────────────────────────────────────────────
-        if (isSuccess) {
+        if (verifiedStatus === "SUCCESSFUL") {
             const [, updatedUser] = await prisma.$transaction([
                 prisma.transaction.update({
                     where: { reference },
@@ -247,7 +86,6 @@ async function handleCallback(req: NextRequest) {
                 }),
             ]);
 
-            // Email de confirmation (non bloquant)
             sendDepositConfirmed({
                 to: transaction.user.email,
                 name: transaction.user.name ?? "Utilisateur",
@@ -258,8 +96,7 @@ async function handleCallback(req: NextRequest) {
             return NextResponse.json({ ok: true });
         }
 
-        // ── Échec terminal ────────────────────────────────────────────────
-        if (isFailureTerminal) {
+        if (verifiedStatus === "FAILED") {
             await prisma.transaction.update({
                 where: { reference },
                 data: { status: "FAILED" },
@@ -271,40 +108,11 @@ async function handleCallback(req: NextRequest) {
             });
         }
 
-        // ── Remboursement ─────────────────────────────────────────────────
-        if (isRefunded && transaction.status === "COMPLETED") {
-            await prisma.$transaction([
-                prisma.transaction.update({
-                    where: { reference },
-                    data: { status: "FAILED" }, // statut le plus proche dispo dans le schéma
-                }),
-                prisma.user.update({
-                    where: { id: transaction.userId },
-                    // Décrémente sans passer sous 0
-                    data: {
-                        balance: {
-                            decrement: transaction.amount,
-                        },
-                    },
-                }),
-            ]);
-
-            return NextResponse.json({
-                ok: true,
-                message: "Remboursement enregistré, solde décrémenté",
-            });
-        }
-
-        // Statut non terminal (ex: transaction.updated en cours) → ignorer
-        return NextResponse.json({
-            ok: true,
-            message: "Statut non terminal ignoré",
-        });
+        // Toujours PENDING côté FeexPay → on ignore, le webhook ou le
+        // polling suivant retentera.
+        return NextResponse.json({ ok: true, message: "Toujours en attente" });
     } catch (err) {
         console.error("Callback error:", err);
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
     }
 }
-
-export const GET = handleCallback;
-export const POST = handleCallback;

@@ -1,47 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { FedaPay, Transaction } from "fedapay";
+import {
+    FEEXPAY_MIN_AMOUNT,
+    FEEXPAY_MAX_AMOUNT,
+    getFeexPayNetwork,
+    initiateFeexPayPayin,
+} from "@/lib/feexpay";
 
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/deposit
-   Initie un paiement FedaPay via SDK Node.js et renvoie l'url de redirection.
+   Déclenche un push Mobile Money FeexPay (requesttopay) vers le
+   téléphone du client. Ne renvoie pas d'URL : la confirmation arrive
+   par webhook sur /api/wallet/callback.
 ───────────────────────────────────────────────────────────────── */
 export async function POST(req: NextRequest) {
     try {
         const user = await requireUser();
 
-        const { amount } = (await req.json()) as { amount: number };
+        const { amount, phoneNumber, network: networkSlug } = (await req.json()) as {
+            amount: number;
+            phoneNumber: string;
+            network: string;
+        };
 
-        if (!amount || amount < 500) {
+        if (
+            !amount ||
+            amount < 500 ||
+            amount < FEEXPAY_MIN_AMOUNT ||
+            amount > FEEXPAY_MAX_AMOUNT
+        ) {
             return NextResponse.json(
-                { error: "Le montant minimum est de 500 FCFA" },
+                { error: "Le montant minimum est de 500 FCFA (maximum 2 000 000 FCFA)" },
                 { status: 400 },
             );
         }
 
-        const fedapaySecret = process.env.FEDAPAY_SECRET_KEY;
-        const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim();
-
-        if (!fedapaySecret || !appUrl) {
+        const network = getFeexPayNetwork(networkSlug);
+        if (!network) {
             return NextResponse.json(
-                { error: "FedaPay ou URL de l'app non configuré" },
-                { status: 503 },
+                { error: "Réseau Mobile Money invalide" },
+                { status: 400 },
             );
         }
 
-        // Configuration du SDK FedaPay
-        FedaPay.setApiKey(fedapaySecret);
-        FedaPay.setEnvironment(
-            fedapaySecret.includes("live") ? "live" : "sandbox"
-        );
+        const localNumber = (phoneNumber ?? "").replace(/\D/g, "");
+        if (localNumber.length < 8) {
+            return NextResponse.json(
+                { error: "Numéro de téléphone invalide" },
+                { status: 400 },
+            );
+        }
+        const fullPhoneNumber = `${network.countryCallingCode}${localNumber}`;
 
-        // Nettoyage de l'URL pour éviter les double-slash
-        const baseUrl = appUrl.endsWith("/") ? appUrl.slice(0, -1) : appUrl;
-        
-        // Générer une référence unique
         const reference = `DEP_${user.id}_${Date.now()}`;
-        const callbackUrl = `${baseUrl}/api/wallet/callback`;
 
         // Créer la Transaction PENDING en DB
         await prisma.transaction.create({
@@ -54,25 +66,33 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        // Appel au SDK pour créer la transaction FedaPay
-        const transaction = await Transaction.create({
-            description: `Rechargement Maxi Views — ${user.email}`,
-            amount: amount,
-            callback_url: callbackUrl,
-            currency: { iso: "XOF" },
-            custom_metadata: { reference },
-            customer: {
-                email: user.email,
-                firstname: user.name ?? "Client",
-            },
-        });
+        try {
+            await initiateFeexPayPayin({
+                network,
+                phoneNumber: fullPhoneNumber,
+                amount,
+                description: `Rechargement Maxi Views`,
+                callback_info: reference,
+            });
+        } catch (err) {
+            // L'appel FeexPay a échoué : on retire la transaction PENDING
+            // créée juste avant, elle n'a jamais été soumise.
+            await prisma.transaction.update({
+                where: { reference },
+                data: { status: "FAILED" },
+            });
 
-        // Générer le lien de paiement via le token
-        const token = await transaction.generateToken();
+            const message =
+                err instanceof Error && err.message !== "FEEXPAY_NOT_CONFIGURED"
+                    ? err.message
+                    : "FeexPay n'est pas configuré ou a rejeté la demande";
+            return NextResponse.json({ error: message }, { status: 502 });
+        }
 
         return NextResponse.json({
-            url: token.url,
             reference,
+            message:
+                "Vérifiez votre téléphone pour confirmer le paiement Mobile Money.",
         });
     } catch (err) {
         if (err instanceof Error && err.message === "UNAUTHENTICATED") {
@@ -82,7 +102,9 @@ export async function POST(req: NextRequest) {
             );
         }
         console.error("Deposit error:", err);
-        return NextResponse.json({ error: "Erreur serveur lors de l'initialisation du paiement FedaPay" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Erreur serveur lors de l'initialisation du paiement" },
+            { status: 500 },
+        );
     }
 }
-

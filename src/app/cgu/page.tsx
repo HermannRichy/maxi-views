@@ -44,8 +44,8 @@ const SECTIONS: { title: string; paragraphs: string[]; list?: string[] }[] = [
     {
         title: "5. Paiement",
         paragraphs: [
-            "Le rechargement du portefeuille s'effectue via Mobile Money, par l'intermédiaire du prestataire de paiement FedaPay. Maxi Views ne stocke aucune donnée bancaire ou de paiement : ces informations sont traitées directement par FedaPay conformément à sa propre politique de sécurité.",
-            "Toute transaction validée par FedaPay est considérée comme définitive et crédite immédiatement le solde du compte concerné.",
+            "Le rechargement du portefeuille s'effectue via Mobile Money, par l'intermédiaire du prestataire de paiement FeexPay. Maxi Views ne stocke aucune donnée bancaire ou de paiement : ces informations sont traitées directement par FeexPay conformément à sa propre politique de sécurité.",
+            "Toute transaction validée par FeexPay est considérée comme définitive et crédite immédiatement le solde du compte concerné.",
         ],
     },
     {

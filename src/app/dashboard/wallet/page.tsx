@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge, type badgeVariants } from "@/components/ui/badge";
@@ -25,15 +25,25 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     IconWallet,
     IconArrowUpRight,
     IconArrowDownLeft,
     IconLoader2,
     IconPlus,
     IconHistory,
+    IconDeviceMobile,
+    IconX,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { FEEXPAY_COUNTRIES, FEEXPAY_NETWORKS } from "@/lib/feexpay-networks";
 
 type Transaction = {
     id: string;
@@ -55,6 +65,9 @@ const TX_STATUS_CONFIG: Record<
 
 const AMOUNTS = [1000, 2000, 5000, 10000, 25000, 50000];
 
+const POLL_INTERVAL_MS = 3000;
+const POLL_MAX_ATTEMPTS = 40; // ~2 minutes
+
 export default function WalletPage() {
     const [balance, setBalance] = useState<number | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -62,7 +75,26 @@ export default function WalletPage() {
     const [depositing, setDepositing] = useState(false);
     const [customAmount, setCustomAmount] = useState("");
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+
+    const [country, setCountry] = useState<string | null>(null);
+    const [networkSlug, setNetworkSlug] = useState<string | null>(null);
+    const [phoneNumber, setPhoneNumber] = useState("");
+
+    const [pendingReference, setPendingReference] = useState<string | null>(
+        null,
+    );
+    const [cancelling, setCancelling] = useState(false);
+    const pollAttempts = useRef(0);
+
     const router = useRouter();
+
+    const refreshWallet = () =>
+        fetch("/api/wallet/balance")
+            .then((r) => r.json())
+            .then((d) => {
+                setBalance(d.balance);
+                setTransactions(d.transactions ?? []);
+            });
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -77,14 +109,58 @@ export default function WalletPage() {
             }
         }
 
-        fetch("/api/wallet/balance")
-            .then((r) => r.json())
-            .then((d) => {
-                setBalance(d.balance);
-                setTransactions(d.transactions ?? []);
-            })
-            .finally(() => setLoading(false));
+        refreshWallet().finally(() => setLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router]);
+
+    // Polling du statut pendant qu'un dépôt est en attente de confirmation
+    useEffect(() => {
+        if (!pendingReference) return;
+
+        pollAttempts.current = 0;
+        const interval = setInterval(async () => {
+            pollAttempts.current += 1;
+
+            try {
+                const res = await fetch(
+                    `/api/wallet/deposit/status?reference=${encodeURIComponent(pendingReference)}`,
+                );
+                const data = await res.json();
+
+                if (data.status === "COMPLETED") {
+                    clearInterval(interval);
+                    setPendingReference(null);
+                    toast.success("Paiement confirmé ! Solde mis à jour.");
+                    refreshWallet();
+                    return;
+                }
+
+                if (data.status === "FAILED") {
+                    clearInterval(interval);
+                    setPendingReference(null);
+                    toast.error("Le paiement a échoué ou a été refusé.");
+                    return;
+                }
+            } catch {
+                // on retente au prochain intervalle
+            }
+
+            if (pollAttempts.current >= POLL_MAX_ATTEMPTS) {
+                clearInterval(interval);
+                toast.info(
+                    "Toujours en attente. Vérifiez votre historique dans quelques instants.",
+                );
+                setPendingReference(null);
+            }
+        }, POLL_INTERVAL_MS);
+
+        return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pendingReference]);
+
+    const networksForCountry = FEEXPAY_NETWORKS.filter(
+        (n) => n.country === country,
+    );
 
     const handleDeposit = async () => {
         const amount = customAmount ? parseInt(customAmount) : selectedAmount;
@@ -92,29 +168,57 @@ export default function WalletPage() {
             toast.error("Montant minimum : 500 FCFA");
             return;
         }
+        if (!networkSlug) {
+            toast.error("Choisissez un pays et un réseau Mobile Money");
+            return;
+        }
+        if (!phoneNumber || phoneNumber.replace(/\D/g, "").length < 8) {
+            toast.error("Numéro de téléphone invalide");
+            return;
+        }
+
         setDepositing(true);
         try {
             const res = await fetch("/api/wallet/deposit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount }),
+                body: JSON.stringify({
+                    amount,
+                    phoneNumber,
+                    network: networkSlug,
+                }),
             });
             const data = await res.json();
             if (!res.ok) {
                 toast.error(data.error || "Erreur de paiement");
-                setDepositing(false);
                 return;
             }
 
-            if (data.url) {
-                window.location.href = data.url;
-            } else {
-                toast.error("Le lien de paiement n'a pas été généré.");
-                setDepositing(false);
-            }
+            toast.info(
+                data.message ??
+                    "Vérifiez votre téléphone pour confirmer le paiement.",
+            );
+            setPendingReference(data.reference);
         } catch {
             toast.error("Erreur lors de l'initialisation du paiement");
+        } finally {
             setDepositing(false);
+        }
+    };
+
+    const handleCancelPending = async () => {
+        if (!pendingReference) return;
+        setCancelling(true);
+        try {
+            await fetch("/api/wallet/cancel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reference: pendingReference }),
+            });
+            setPendingReference(null);
+            toast.info("Dépôt annulé.");
+        } finally {
+            setCancelling(false);
         }
     };
 
@@ -153,6 +257,33 @@ export default function WalletPage() {
                 </CardContent>
             </Card>
 
+            {/* Pending deposit */}
+            {pendingReference && (
+                <Card className="border-warning/30">
+                    <CardContent className="p-5 flex items-center gap-4">
+                        <IconLoader2 className="w-6 h-6 text-warning animate-spin shrink-0" />
+                        <div className="flex-1">
+                            <p className="text-sm font-semibold">
+                                Confirmation en attente
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Validez la demande de paiement reçue sur votre
+                                téléphone.
+                            </p>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCancelPending}
+                            disabled={cancelling}
+                        >
+                            <IconX data-icon="inline-start" />
+                            Annuler
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
+
             {/* Deposit form */}
             <Card>
                 <CardHeader>
@@ -161,6 +292,75 @@ export default function WalletPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    {/* Country + network */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground uppercase tracking-widest">
+                                Pays
+                            </Label>
+                            <Select
+                                value={country ?? undefined}
+                                onValueChange={(value) => {
+                                    setCountry(value);
+                                    setNetworkSlug(null);
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Choisir..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {FEEXPAY_COUNTRIES.map((c) => (
+                                        <SelectItem key={c.code} value={c.code}>
+                                            {c.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground uppercase tracking-widest">
+                                Réseau
+                            </Label>
+                            <Select
+                                value={networkSlug ?? undefined}
+                                onValueChange={setNetworkSlug}
+                                disabled={!country}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Choisir..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {networksForCountry.map((n) => (
+                                        <SelectItem key={n.slug} value={n.slug}>
+                                            {n.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {/* Phone number */}
+                    <div className="space-y-1.5">
+                        <Label
+                            htmlFor="phoneNumber"
+                            className="text-xs text-muted-foreground uppercase tracking-widest"
+                        >
+                            Numéro Mobile Money
+                        </Label>
+                        <div className="relative">
+                            <IconDeviceMobile className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                                id="phoneNumber"
+                                type="tel"
+                                placeholder="ex: 0166000000"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
+                    </div>
+
                     {/* Preset amounts */}
                     <div className="grid grid-cols-3 gap-2">
                         {AMOUNTS.map((a) => (
@@ -206,7 +406,11 @@ export default function WalletPage() {
 
                     <Button
                         onClick={handleDeposit}
-                        disabled={depositing || (!selectedAmount && !customAmount)}
+                        disabled={
+                            depositing ||
+                            !!pendingReference ||
+                            (!selectedAmount && !customAmount)
+                        }
                         className="w-full"
                     >
                         {depositing ? (
@@ -214,11 +418,12 @@ export default function WalletPage() {
                         ) : (
                             <IconWallet data-icon="inline-start" />
                         )}
-                        {depositing ? "Chargement..." : "Payer avec FedaPay"}
+                        {depositing ? "Envoi de la demande..." : "Recharger"}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center">
-                        Paiement sécurisé via Mobile Money ou carte bancaire
+                        Vous recevrez une demande de confirmation directement sur
+                        votre téléphone
                     </p>
                 </CardContent>
             </Card>

@@ -26,7 +26,7 @@ const SECTIONS: { title: string; paragraphs: string[]; list?: string[] }[] = [
             "Données d'identité et de contact : nom, adresse email ;",
             "Données de compte : mot de passe (stocké de façon chiffrée), méthode de connexion (email/mot de passe ou Google) ;",
             "Données de commande : historique des commandes, service demandé, lien ou identifiant cible, montant ;",
-            "Données de transaction : montant et statut des rechargements de portefeuille (les moyens de paiement eux-mêmes sont traités exclusivement par FedaPay, jamais stockés par nos soins) ;",
+            "Données de transaction : montant et statut des rechargements de portefeuille (les moyens de paiement eux-mêmes sont traités exclusivement par FeexPay, jamais stockés par nos soins) ;",
             "Données techniques : cookies de session nécessaires à l'authentification.",
         ],
     },
@@ -53,7 +53,7 @@ const SECTIONS: { title: string; paragraphs: string[]; list?: string[] }[] = [
             "Nous ne vendons jamais vos données. Elles peuvent être transmises aux prestataires suivants, uniquement dans la mesure nécessaire à la fourniture du service :",
         ],
         list: [
-            "FedaPay — traitement des paiements Mobile Money ;",
+            "FeexPay — traitement des paiements Mobile Money ;",
             "Resend — envoi des emails transactionnels ;",
             "Notre hébergeur de base de données — stockage sécurisé des données de compte et de commande.",
         ],

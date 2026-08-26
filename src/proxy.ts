@@ -22,7 +22,7 @@ function isPublicRoute(pathname: string) {
 export default async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Webhook FedaPay : doit rester public, sans aucune vérification, sans exception.
+    // Webhook FeexPay : doit rester public, sans aucune vérification, sans exception.
     if (pathname.startsWith("/api/wallet/callback")) {
         return NextResponse.next();
     }
