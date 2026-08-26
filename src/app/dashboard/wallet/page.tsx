@@ -2,15 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FuturisticCard } from "@/components/ui/futuristic";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge, type badgeVariants } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
     IconWallet,
     IconArrowUpRight,
     IconArrowDownLeft,
-    IconRefresh,
+    IconLoader2,
     IconPlus,
+    IconHistory,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type Transaction = {
     id: string;
@@ -19,6 +42,15 @@ type Transaction = {
     status: "PENDING" | "COMPLETED" | "FAILED";
     reference: string;
     createdAt: string;
+};
+
+const TX_STATUS_CONFIG: Record<
+    Transaction["status"],
+    { label: string; variant: NonNullable<VariantProps<typeof badgeVariants>["variant"]> }
+> = {
+    PENDING: { label: "En attente", variant: "warning" },
+    COMPLETED: { label: "Confirmé", variant: "success" },
+    FAILED: { label: "Échoué", variant: "destructive" },
 };
 
 const AMOUNTS = [1000, 2000, 5000, 10000, 25000, 50000];
@@ -86,14 +118,6 @@ export default function WalletPage() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-40">
-                <IconRefresh className="w-6 h-6 animate-spin text-primary" />
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-8 max-w-2xl">
             <div>
@@ -104,144 +128,202 @@ export default function WalletPage() {
             </div>
 
             {/* Balance card */}
-            <FuturisticCard className="p-6">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                            Solde disponible
-                        </p>
-                        <p className="text-4xl font-black text-primary tabular-nums">
-                            {(balance ?? 0).toLocaleString("fr-FR")}
-                            <span className="text-lg font-semibold ml-2">
-                                FCFA
-                            </span>
-                        </p>
+            <Card>
+                <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
+                                Solde disponible
+                            </p>
+                            {loading ? (
+                                <Skeleton className="h-10 w-40" />
+                            ) : (
+                                <p className="text-4xl font-black text-primary tabular-nums">
+                                    {(balance ?? 0).toLocaleString("fr-FR")}
+                                    <span className="text-lg font-semibold ml-2">
+                                        FCFA
+                                    </span>
+                                </p>
+                            )}
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                            <IconWallet className="w-6 h-6" />
+                        </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <IconWallet className="w-6 h-6" />
-                    </div>
-                </div>
-            </FuturisticCard>
+                </CardContent>
+            </Card>
 
             {/* Deposit form */}
-            <FuturisticCard className="p-6">
-                <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <IconPlus className="w-5 h-5 text-primary" /> Recharger
-                </h2>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                        <IconPlus className="w-5 h-5 text-primary" /> Recharger
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {/* Preset amounts */}
+                    <div className="grid grid-cols-3 gap-2">
+                        {AMOUNTS.map((a) => (
+                            <button
+                                key={a}
+                                type="button"
+                                onClick={() => {
+                                    setSelectedAmount(a);
+                                    setCustomAmount("");
+                                }}
+                                className={cn(
+                                    "py-2 rounded-xl text-sm font-semibold border transition-colors",
+                                    selectedAmount === a && !customAmount
+                                        ? "border-primary bg-primary/10 text-primary"
+                                        : "border-white/10 bg-muted/30 hover:border-primary/50",
+                                )}
+                            >
+                                {a.toLocaleString("fr-FR")} FCFA
+                            </button>
+                        ))}
+                    </div>
 
-                {/* Preset amounts */}
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                    {AMOUNTS.map((a) => (
-                        <button
-                            key={a}
-                            onClick={() => {
-                                setSelectedAmount(a);
-                                setCustomAmount("");
-                            }}
-                            className={`py-2 rounded-xl text-sm font-semibold border transition-colors ${selectedAmount === a && !customAmount ? "border-primary bg-primary/10 text-primary" : "border-white/10 bg-muted/30 hover:border-primary/50"}`}
+                    {/* Custom amount */}
+                    <div className="space-y-1.5">
+                        <Label
+                            htmlFor="customAmount"
+                            className="text-xs text-muted-foreground uppercase tracking-widest"
                         >
-                            {a.toLocaleString("fr-FR")} FCFA
-                        </button>
-                    ))}
-                </div>
+                            Montant personnalisé (FCFA)
+                        </Label>
+                        <Input
+                            id="customAmount"
+                            type="number"
+                            min={500}
+                            placeholder="ex: 15000"
+                            value={customAmount}
+                            onChange={(e) => {
+                                setCustomAmount(e.target.value);
+                                setSelectedAmount(null);
+                            }}
+                        />
+                    </div>
 
-                {/* Custom amount */}
-                <div className="mb-4">
-                    <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">
-                        Montant personnalisé (FCFA)
-                    </label>
-                    <input
-                        type="number"
-                        min={500}
-                        placeholder="ex: 15000"
-                        value={customAmount}
-                        onChange={(e) => {
-                            setCustomAmount(e.target.value);
-                            setSelectedAmount(null);
-                        }}
-                        className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                    />
-                </div>
+                    <Button
+                        onClick={handleDeposit}
+                        disabled={depositing || (!selectedAmount && !customAmount)}
+                        className="w-full"
+                    >
+                        {depositing ? (
+                            <IconLoader2 data-icon="inline-start" className="animate-spin" />
+                        ) : (
+                            <IconWallet data-icon="inline-start" />
+                        )}
+                        {depositing ? "Chargement..." : "Payer avec FedaPay"}
+                    </Button>
 
-                <button
-                    onClick={handleDeposit}
-                    disabled={depositing || (!selectedAmount && !customAmount)}
-                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {depositing ? (
-                        <IconRefresh className="w-4 h-4 animate-spin" />
-                    ) : (
-                        <IconWallet className="w-4 h-4" />
-                    )}
-                    {depositing ? "Chargement..." : "Payer avec FedaPay"}
-                </button>
-
-                <p className="text-xs text-muted-foreground mt-3 text-center">
-                    Paiement sécurisé via Mobile Money ou carte bancaire
-                </p>
-            </FuturisticCard>
+                    <p className="text-xs text-muted-foreground text-center">
+                        Paiement sécurisé via Mobile Money ou carte bancaire
+                    </p>
+                </CardContent>
+            </Card>
 
             {/* Transactions */}
             <div>
                 <h2 className="font-bold text-lg mb-4">Historique</h2>
-                {transactions.length === 0 ? (
-                    <FuturisticCard className="p-6 text-center text-sm text-muted-foreground">
-                        Aucune transaction pour l&apos;instant.
-                    </FuturisticCard>
+                {loading ? (
+                    <Card>
+                        <div className="p-5 space-y-3">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                            ))}
+                        </div>
+                    </Card>
+                ) : transactions.length === 0 ? (
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <IconHistory />
+                            </EmptyMedia>
+                            <EmptyTitle>Aucune transaction</EmptyTitle>
+                            <EmptyDescription>
+                                Votre historique de rechargements et commandes
+                                apparaîtra ici.
+                            </EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
                 ) : (
-                    <div className="space-y-2">
-                        {transactions.map((tx) => (
-                            <FuturisticCard
-                                key={tx.id}
-                                className="p-4 flex items-center gap-4"
-                            >
-                                <div
-                                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === "CREDIT" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}
-                                >
-                                    {tx.type === "CREDIT" ? (
-                                        <IconArrowDownLeft className="w-4 h-4" />
-                                    ) : (
-                                        <IconArrowUpRight className="w-4 h-4" />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium">
-                                        {tx.type === "CREDIT"
-                                            ? "Rechargement"
-                                            : "Commande"}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {new Date(
-                                            tx.createdAt,
-                                        ).toLocaleDateString("fr-FR", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                        })}
-                                    </p>
-                                </div>
-                                <div className="text-right shrink-0">
-                                    <p
-                                        className={`font-bold tabular-nums ${tx.type === "CREDIT" ? "text-success" : "text-destructive"}`}
-                                    >
-                                        {tx.type === "CREDIT" ? "+" : "-"}
-                                        {tx.amount.toLocaleString("fr-FR")} FCFA
-                                    </p>
-                                    <p
-                                        className={`text-xs ${tx.status === "COMPLETED" ? "text-success" : tx.status === "FAILED" ? "text-destructive" : "text-warning"}`}
-                                    >
-                                        {tx.status === "COMPLETED"
-                                            ? "Confirmé"
-                                            : tx.status === "FAILED"
-                                              ? "Échoué"
-                                              : "En attente"}
-                                    </p>
-                                </div>
-                            </FuturisticCard>
-                        ))}
-                    </div>
+                    <Card>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Statut</TableHead>
+                                    <TableHead className="text-right">
+                                        Montant
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {transactions.map((tx) => {
+                                    const st = TX_STATUS_CONFIG[tx.status];
+                                    return (
+                                        <TableRow key={tx.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <div
+                                                        className={cn(
+                                                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                                                            tx.type === "CREDIT"
+                                                                ? "bg-success/10 text-success"
+                                                                : "bg-destructive/10 text-destructive",
+                                                        )}
+                                                    >
+                                                        {tx.type === "CREDIT" ? (
+                                                            <IconArrowDownLeft className="w-3.5 h-3.5" />
+                                                        ) : (
+                                                            <IconArrowUpRight className="w-3.5 h-3.5" />
+                                                        )}
+                                                    </div>
+                                                    <span className="font-medium">
+                                                        {tx.type === "CREDIT"
+                                                            ? "Rechargement"
+                                                            : "Commande"}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                                {new Date(
+                                                    tx.createdAt,
+                                                ).toLocaleDateString("fr-FR", {
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={st.variant}>
+                                                    {st.label}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell
+                                                className={cn(
+                                                    "text-right font-bold tabular-nums",
+                                                    tx.type === "CREDIT"
+                                                        ? "text-success"
+                                                        : "text-destructive",
+                                                )}
+                                            >
+                                                {tx.type === "CREDIT" ? "+" : "-"}
+                                                {tx.amount.toLocaleString(
+                                                    "fr-FR",
+                                                )}{" "}
+                                                FCFA
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </Card>
                 )}
             </div>
         </div>

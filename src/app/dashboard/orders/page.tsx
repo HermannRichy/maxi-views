@@ -1,8 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FuturisticCard } from "@/components/ui/futuristic";
-import { IconShoppingCart, IconRefresh } from "@tabler/icons-react";
+import Link from "next/link";
+import { IconShoppingCart } from "@tabler/icons-react";
+import { Card } from "@/components/ui/card";
+import { Badge, type badgeVariants } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 type Order = {
     id: string;
@@ -15,28 +36,15 @@ type Order = {
     createdAt: string;
 };
 
-const STATUS_CONFIG = {
-    PENDING: {
-        label: "En attente",
-        color: "text-warning",
-        bg: "bg-warning/10",
-    },
-    PROCESSING: {
-        label: "En cours",
-        color: "text-info",
-        bg: "bg-info/10",
-    },
-    COMPLETED: {
-        label: "Terminée",
-        color: "text-success",
-        bg: "bg-success/10",
-    },
-    FAILED: { label: "Échouée", color: "text-destructive", bg: "bg-destructive/10" },
-    CANCELLED: {
-        label: "Annulée",
-        color: "text-muted-foreground",
-        bg: "bg-muted",
-    },
+const STATUS_CONFIG: Record<
+    Order["status"],
+    { label: string; variant: NonNullable<VariantProps<typeof badgeVariants>["variant"]> }
+> = {
+    PENDING: { label: "En attente", variant: "warning" },
+    PROCESSING: { label: "En cours", variant: "info" },
+    COMPLETED: { label: "Terminée", variant: "success" },
+    FAILED: { label: "Échouée", variant: "destructive" },
+    CANCELLED: { label: "Annulée", variant: "secondary" },
 };
 
 export default function OrdersPage() {
@@ -50,62 +58,90 @@ export default function OrdersPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-40">
-                <IconRefresh className="w-6 h-6 animate-spin text-primary" />
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold">Mes commandes</h1>
                 <p className="text-muted-foreground text-sm mt-1">
-                    {orders.length} commande{orders.length !== 1 ? "s" : ""} au
-                    total
+                    {loading
+                        ? "Chargement..."
+                        : `${orders.length} commande${orders.length !== 1 ? "s" : ""} au total`}
                 </p>
             </div>
 
-            {orders.length === 0 ? (
-                <FuturisticCard className="p-10 text-center">
-                    <IconShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/20 mb-4" />
-                    <p className="text-muted-foreground">
-                        Aucune commande pour l&apos;instant.
-                    </p>
-                </FuturisticCard>
+            {loading ? (
+                <Card>
+                    <div className="p-5 space-y-3">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                        ))}
+                    </div>
+                </Card>
+            ) : orders.length === 0 ? (
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <IconShoppingCart />
+                        </EmptyMedia>
+                        <EmptyTitle>Aucune commande</EmptyTitle>
+                        <EmptyDescription>
+                            Vous n&apos;avez pas encore passé de commande.
+                        </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                        <Button asChild size="sm">
+                            <Link href="/dashboard/new-order">
+                                Passer une commande
+                            </Link>
+                        </Button>
+                    </EmptyContent>
+                </Empty>
             ) : (
-                <div className="space-y-3">
-                    {orders.map((order) => {
-                        const st = STATUS_CONFIG[order.status];
-                        return (
-                            <FuturisticCard key={order.id} className="p-5">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            <span className="font-bold text-sm">
-                                                {order.serviceName}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground bg-muted/50 rounded-full px-2 py-0.5">
-                                                {order.network}
-                                            </span>
-                                            <span
-                                                className={`text-xs font-medium rounded-full px-2 py-0.5 ${st.color} ${st.bg}`}
-                                            >
-                                                {st.label}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
+                <Card>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Référence</TableHead>
+                                <TableHead>Service</TableHead>
+                                <TableHead>Réseau</TableHead>
+                                <TableHead>Quantité</TableHead>
+                                <TableHead>Statut</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-right">
+                                    Montant
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {orders.map((order) => {
+                                const st = STATUS_CONFIG[order.status];
+                                return (
+                                    <TableRow key={order.id}>
+                                        <TableCell className="text-muted-foreground font-mono text-xs">
+                                            #{order.id.slice(-8).toUpperCase()}
+                                        </TableCell>
+                                        <TableCell className="font-medium">
+                                            {order.serviceName}
+                                            {order.japOrderId && (
+                                                <span className="block text-xs text-muted-foreground font-normal">
+                                                    JAP #{order.japOrderId}
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {order.network}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
                                             {order.quantity.toLocaleString(
                                                 "fr-FR",
-                                            )}{" "}
-                                            unités
-                                            {order.japOrderId && (
-                                                <> · JAP #{order.japOrderId}</>
                                             )}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={st.variant}>
+                                                {st.label}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
                                             {new Date(
                                                 order.createdAt,
                                             ).toLocaleDateString("fr-FR", {
@@ -113,25 +149,19 @@ export default function OrdersPage() {
                                                 month: "short",
                                                 year: "numeric",
                                             })}
-                                        </p>
-                                    </div>
-                                    <div className="shrink-0">
-                                        <p className="font-black text-primary tabular-nums text-lg">
+                                        </TableCell>
+                                        <TableCell className="text-right font-bold text-primary tabular-nums">
                                             {order.amount.toLocaleString(
                                                 "fr-FR",
                                             )}{" "}
                                             FCFA
-                                        </p>
-                                        <p className="text-xs text-muted-foreground text-right">
-                                            Ref: #
-                                            {order.id.slice(-8).toUpperCase()}
-                                        </p>
-                                    </div>
-                                </div>
-                            </FuturisticCard>
-                        );
-                    })}
-                </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </Card>
             )}
         </div>
     );

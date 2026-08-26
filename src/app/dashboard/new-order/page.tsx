@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FuturisticCard } from "@/components/ui/futuristic";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { NETWORKS } from "@/data/landing";
 import { toast } from "sonner";
-import { IconArrowRight, IconRefresh, IconWallet } from "@tabler/icons-react";
+import { IconArrowLeft, IconLoader2, IconWallet } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
 /* Services par réseau (MVP simplifié) */
 const SERVICES_CATALOG: Record<
@@ -43,6 +47,46 @@ const SERVICES_CATALOG: Record<
         { name: "Membres canal", unitPrice: 10000, minQty: 1000, step: 1000 },
     ],
 };
+
+const STEPS = ["Réseau", "Service", "Détails"] as const;
+
+function StepIndicator({ step }: { step: 1 | 2 | 3 }) {
+    return (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {STEPS.map((s, i) => (
+                <div key={s} className="flex items-center gap-2">
+                    <span
+                        className={cn(
+                            "flex items-center gap-1.5",
+                            step > i + 1
+                                ? "text-primary"
+                                : step === i + 1
+                                  ? "text-foreground font-semibold"
+                                  : "",
+                        )}
+                    >
+                        <span
+                            className={cn(
+                                "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
+                                step > i + 1
+                                    ? "bg-primary text-primary-foreground"
+                                    : step === i + 1
+                                      ? "bg-foreground text-background"
+                                      : "bg-muted text-muted-foreground",
+                            )}
+                        >
+                            {i + 1}
+                        </span>
+                        {s}
+                    </span>
+                    {i < STEPS.length - 1 && (
+                        <div className="w-6 h-px bg-border" />
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function NewOrderPage() {
     const router = useRouter();
@@ -112,71 +156,64 @@ export default function NewOrderPage() {
                 </p>
             </div>
 
-            {/* Step indicator */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                {(["Réseau", "Service", "Détails"] as const).map((s, i) => (
-                    <span
-                        key={s}
-                        className={`flex items-center gap-1 ${step > i + 1 ? "text-primary" : step === i + 1 ? "text-foreground font-semibold" : ""}`}
-                    >
-                        <span
-                            className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step > i + 1 ? "bg-primary text-primary-foreground" : step === i + 1 ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}
-                        >
-                            {i + 1}
-                        </span>
-                        {s}
-                        {i < 2 && <IconArrowRight className="w-3 h-3 ml-1" />}
-                    </span>
-                ))}
-            </div>
+            <StepIndicator step={step} />
 
             {/* Step 1: Network */}
             {step === 1 && (
-                <FuturisticCard className="p-5">
-                    <h2 className="font-bold mb-4">Choisissez un réseau</h2>
-                    <div className="grid grid-cols-2 gap-3">
-                        {NETWORKS.map((n) => (
-                            <button
-                                key={n.name}
-                                onClick={() => {
-                                    setSelectedNetwork(n.name);
-                                    setSelectedService(null);
-                                    setStep(2);
-                                }}
-                                className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
-                            >
-                                <n.Icon
-                                    className="w-6 h-6 shrink-0"
-                                    style={{ color: n.iconColor }}
-                                    stroke={1.5}
-                                />
-                                <span className="text-sm font-medium">
-                                    {n.name}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </FuturisticCard>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Choisissez un réseau</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 gap-3">
+                            {NETWORKS.map((n) => (
+                                <button
+                                    key={n.name}
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedNetwork(n.name);
+                                        setSelectedService(null);
+                                        setStep(2);
+                                    }}
+                                    className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
+                                >
+                                    <n.Icon
+                                        className="w-6 h-6 shrink-0"
+                                        style={{ color: n.iconColor }}
+                                        stroke={1.5}
+                                    />
+                                    <span className="text-sm font-medium">
+                                        {n.name}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Step 2: Service */}
             {step === 2 && selectedNetwork && (
-                <FuturisticCard className="p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                        <button
-                            onClick={() => setStep(1)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            ← Retour
-                        </button>
-                        <h2 className="font-bold">
-                            Service pour {selectedNetwork}
-                        </h2>
-                    </div>
-                    <div className="space-y-2">
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setStep(1)}
+                                className="h-7 px-2 -ml-2"
+                            >
+                                <IconArrowLeft data-icon="inline-start" />
+                                Retour
+                            </Button>
+                        </div>
+                        <CardTitle>Service pour {selectedNetwork}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
                         {(SERVICES_CATALOG[selectedNetwork] ?? []).map((s) => (
                             <button
                                 key={s.name}
+                                type="button"
                                 onClick={() => {
                                     setSelectedService(s);
                                     setQuantity(s.minQty);
@@ -196,49 +233,60 @@ export default function NewOrderPage() {
                                 </span>
                             </button>
                         ))}
-                    </div>
-                </FuturisticCard>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Step 3: Order details */}
             {step === 3 && selectedService && selectedNetwork && (
-                <FuturisticCard className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <button
-                            onClick={() => setStep(2)}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            ← Retour
-                        </button>
-                        <h2 className="font-bold">
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setStep(2)}
+                                className="h-7 px-2 -ml-2"
+                            >
+                                <IconArrowLeft data-icon="inline-start" />
+                                Retour
+                            </Button>
+                        </div>
+                        <CardTitle>
                             {selectedNetwork} — {selectedService.name}
-                        </h2>
-                    </div>
-
-                    <div className="space-y-4">
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                         {/* Link */}
-                        <div>
-                            <label className="text-xs text-muted-foreground uppercase tracking-widest block mb-1">
+                        <div className="space-y-1.5">
+                            <Label
+                                htmlFor="link"
+                                className="text-xs text-muted-foreground uppercase tracking-widest"
+                            >
                                 URL / Lien du compte ou du post
-                            </label>
-                            <input
+                            </Label>
+                            <Input
+                                id="link"
                                 type="url"
                                 placeholder="https://tiktok.com/@moncompte"
                                 value={link}
                                 onChange={(e) => setLink(e.target.value)}
-                                className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
                                 required
                             />
                         </div>
 
                         {/* Quantity */}
-                        <div>
-                            <label className="text-xs text-muted-foreground uppercase tracking-widest block mb-1">
+                        <div className="space-y-1.5">
+                            <Label
+                                htmlFor="quantity"
+                                className="text-xs text-muted-foreground uppercase tracking-widest"
+                            >
                                 Quantité (min.{" "}
                                 {selectedService.minQty.toLocaleString("fr-FR")}
                                 )
-                            </label>
-                            <input
+                            </Label>
+                            <Input
+                                id="quantity"
                                 type="number"
                                 min={selectedService.minQty}
                                 step={selectedService.step}
@@ -246,7 +294,6 @@ export default function NewOrderPage() {
                                 onChange={(e) =>
                                     setQuantity(Number(e.target.value))
                                 }
-                                className="w-full bg-muted/30 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary"
                             />
                         </div>
 
@@ -269,26 +316,29 @@ export default function NewOrderPage() {
                         </div>
 
                         {/* Submit */}
-                        <button
+                        <Button
                             onClick={handleSubmit}
                             disabled={
                                 loading ||
                                 !link ||
                                 quantity < selectedService.minQty
                             }
-                            className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full"
                         >
                             {loading ? (
-                                <IconRefresh className="w-4 h-4 animate-spin" />
+                                <IconLoader2
+                                    data-icon="inline-start"
+                                    className="animate-spin"
+                                />
                             ) : (
-                                <IconWallet className="w-4 h-4" />
+                                <IconWallet data-icon="inline-start" />
                             )}
                             {loading
                                 ? "Traitement..."
                                 : `Commander — ${amount.toLocaleString("fr-FR")} FCFA`}
-                        </button>
-                    </div>
-                </FuturisticCard>
+                        </Button>
+                    </CardContent>
+                </Card>
             )}
         </div>
     );
