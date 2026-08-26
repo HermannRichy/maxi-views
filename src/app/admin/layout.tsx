@@ -70,8 +70,10 @@ export default async function AdminLayout({
                     <p className="text-xs text-muted-foreground truncate mb-2">
                         {user.email}
                     </p>
-                    <SignOutConfirm className="text-xs text-destructive hover:text-destructive/80 transition-colors">
-                        Se déconnecter
+                    <SignOutConfirm>
+                        <button className="text-xs text-destructive hover:text-destructive/80 transition-colors">
+                            Se déconnecter
+                        </button>
                     </SignOutConfirm>
                 </div>
             </aside>
