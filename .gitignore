@@ -50,3 +50,6 @@ next-env.d.ts
 /prisma/migrations/
 /prisma/*.db
 /prisma/*.db-journal
+
+# Données fournisseur internes (coûts, marges) — jamais dans le repo
+/internal/
