@@ -9,6 +9,12 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { GeoCircle, GeoRing } from "@/components/ui/futuristic";
 import {
     IconLock,
@@ -150,23 +156,27 @@ function ResetPasswordForm() {
                                 )}
 
                                 <form onSubmit={handleSubmit} className="space-y-5">
-                                    <div className="space-y-2 text-center">
+                                    <div className="space-y-2 text-center flex flex-col items-center">
                                         <Label
                                             htmlFor="otp"
                                             className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
                                         >
                                             Code à 6 chiffres
                                         </Label>
-                                        <Input
+                                        <InputOTP
                                             id="otp"
-                                            type="text"
-                                            placeholder="000000"
                                             maxLength={6}
+                                            pattern={REGEXP_ONLY_DIGITS}
                                             value={otp}
-                                            onChange={(e) => setOtp(e.target.value)}
-                                            className="h-14 bg-white/5 border-white/10 rounded-xl text-center text-2xl font-bold tracking-[0.5em] focus:ring-primary/50 transition-all"
+                                            onChange={(value) => setOtp(value)}
                                             required
-                                        />
+                                        >
+                                            <InputOTPGroup>
+                                                {Array.from({ length: 6 }).map((_, i) => (
+                                                    <InputOTPSlot key={i} index={i} />
+                                                ))}
+                                            </InputOTPGroup>
+                                        </InputOTP>
                                     </div>
                                     <div className="space-y-2">
                                         <Label

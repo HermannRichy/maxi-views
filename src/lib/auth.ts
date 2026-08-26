@@ -4,7 +4,7 @@ import { emailOTP } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import prisma from "./prisma";
-import { sendVerificationOtpEmail } from "./emails";
+import { sendVerificationOtpEmail, sendWelcomeEmail } from "./emails";
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -19,6 +19,12 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
+    },
+
+    emailVerification: {
+        afterEmailVerification: async (user) => {
+            await sendWelcomeEmail({ to: user.email, name: user.name });
+        },
     },
 
     socialProviders: {

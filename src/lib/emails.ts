@@ -148,6 +148,36 @@ export async function sendVerificationOtpEmail({
     }
 }
 
+/** 0a. Email de bienvenue → nouvel utilisateur (après vérification email) */
+export async function sendWelcomeEmail({
+    to,
+    name,
+}: {
+    to: string;
+    name?: string | null;
+}) {
+    if (!resend) return;
+    try {
+        const { error } = await resend.emails.send({
+            from: `Maxi Views Team <${ADMIN_EMAIL}>`,
+            to,
+            subject: "🎉 Bienvenue chez Maxi Views !",
+            html: layout(
+                "Bienvenue chez Maxi Views",
+                `
+                <h2 style="color:#111;margin:0 0 8px">Bienvenue ${name ?? ""} 👋</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Votre adresse email est vérifiée et votre compte est prêt. Vous pouvez dès maintenant recharger votre portefeuille et passer votre première commande.</p>
+                ${button(`${APP_URL}/dashboard/new-order`, "Passer ma première commande")}
+                <p style="color:#71717a;font-size:13px;margin-top:24px">Une question ? Répondez simplement à cet email, notre équipe vous répond sous 24h.</p>
+            `,
+            ),
+        });
+        if (error) console.error("Erreur d'envoi email de bienvenue:", error);
+    } catch (error) {
+        console.error("Erreur d'envoi email de bienvenue:", error);
+    }
+}
+
 /** 0b. Nouveau message de contact → admin */
 export async function sendContactMessage({
     name,
