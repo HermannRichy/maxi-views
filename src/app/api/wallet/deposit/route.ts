@@ -75,6 +75,8 @@ export async function POST(req: NextRequest) {
                 callback_info: reference,
             });
         } catch (err) {
+            console.error("FeexPay requesttopay error:", err);
+
             // L'appel FeexPay a échoué : on retire la transaction PENDING
             // créée juste avant, elle n'a jamais été soumise.
             await prisma.transaction.update({
