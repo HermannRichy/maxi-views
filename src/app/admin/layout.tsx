@@ -6,6 +6,7 @@ import {
     IconShieldCheck,
     IconLayoutDashboard,
     IconShoppingCart,
+    IconUsers,
 } from "@tabler/icons-react";
 import { SignOutConfirm } from "@/components/ui/sign-out-confirm";
 import { GlowOrb } from "@/components/ui/futuristic";
@@ -49,6 +50,12 @@ export default async function AdminLayout({
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
                     >
                         <IconShoppingCart className="w-4 h-4" /> Commandes
+                    </Link>
+                    <Link
+                        href="/admin/users"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                    >
+                        <IconUsers className="w-4 h-4" /> Utilisateurs
                     </Link>
                     <div className="h-px bg-white/10 my-2" />
                     <Link
