@@ -406,6 +406,86 @@ export async function sendRevenueMilestoneEmail({
     }
 }
 
+/** 4c. Pic d'échecs de paiement sur les rechargements → admin */
+export async function sendPaymentFailureAlertEmail({
+    failed,
+    total,
+    failureRate,
+}: {
+    failed: number;
+    total: number;
+    failureRate: number;
+}) {
+    if (!resend) return;
+    try {
+        const { error } = await resend.emails.send({
+            from: FROM,
+            to: ADMIN_EMAIL,
+            subject: `⚠️ Pic d'échecs de paiement détecté — Maxi Views`,
+            html: layout(
+                "Pic d'échecs de paiement",
+                `
+                <h2 style="color:#111;margin:0 0 8px">⚠️ Taux d'échec anormal sur les rechargements</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Sur les ${total} dernières tentatives de rechargement Mobile Money, ${failed} ont échoué.</p>
+                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:20px 24px;margin-bottom:24px">
+                    <p style="margin:0;color:#b91c1c;font-size:14px">Taux d'échec</p>
+                    <p style="margin:4px 0 0;font-size:28px;font-weight:900;color:#b91c1c">${Math.round(failureRate * 100)}%</p>
+                </div>
+                <p style="color:#3f3f46;font-size:14px">Cela peut indiquer un problème du côté de FeexPay (réseau Mobile Money indisponible, identifiants expirés...). Vérifiez votre dashboard FeexPay.</p>
+                ${button(`${APP_URL}/admin/transactions`, "Voir les transactions")}
+            `,
+            ),
+        });
+        if (error) console.error("Erreur d'envoi email alerte échecs:", error);
+    } catch (error) {
+        console.error("Erreur d'envoi email alerte échecs:", error);
+    }
+}
+
+/** 4d. Digest hebdomadaire → admin (chaque lundi) */
+export async function sendWeeklyDigestEmail({
+    periodLabel,
+    revenue,
+    deposits,
+    newOrders,
+    newUsers,
+    topNetwork,
+}: {
+    periodLabel: string;
+    revenue: number;
+    deposits: number;
+    newOrders: number;
+    newUsers: number;
+    topNetwork: string | null;
+}) {
+    if (!resend) return;
+    try {
+        const { error } = await resend.emails.send({
+            from: FROM,
+            to: ADMIN_EMAIL,
+            subject: `📊 Résumé hebdomadaire — ${periodLabel}`,
+            html: layout(
+                "Résumé hebdomadaire",
+                `
+                <h2 style="color:#111;margin:0 0 8px">📊 Votre semaine sur Maxi Views</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">${periodLabel}</p>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;color:#3f3f46">
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Chiffre d'affaires</td><td style="font-weight:700;color:#9542ff">${fcfa(revenue)}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Rechargements</td><td style="font-weight:700">${fcfa(deposits)}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Nouvelles commandes</td><td style="font-weight:700">${newOrders}</td></tr>
+                    <tr><td style="padding:8px 0;border-bottom:1px solid #f4f4f5">Nouveaux utilisateurs</td><td style="font-weight:700">${newUsers}</td></tr>
+                    ${topNetwork ? `<tr><td style="padding:8px 0">Réseau le plus vendu</td><td style="font-weight:700">${topNetwork}</td></tr>` : ""}
+                </table>
+                ${button(`${APP_URL}/admin/transactions`, "Voir le détail")}
+            `,
+            ),
+        });
+        if (error) console.error("Erreur d'envoi email digest hebdomadaire:", error);
+    } catch (error) {
+        console.error("Erreur d'envoi email digest hebdomadaire:", error);
+    }
+}
+
 /* ─── Helpers ───────────────────────────────────────────────────── */
 function escapeHtml(text: string) {
     return text

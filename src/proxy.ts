@@ -22,8 +22,13 @@ function isPublicRoute(pathname: string) {
 export default async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Webhook FeexPay : doit rester public, sans aucune vérification, sans exception.
-    if (pathname.startsWith("/api/wallet/callback")) {
+    // Webhook FeexPay et cron Vercel : doivent rester publics, sans
+    // vérification de session — ils ont leur propre protection (secret
+    // dédié vérifié dans la route elle-même).
+    if (
+        pathname.startsWith("/api/wallet/callback") ||
+        pathname.startsWith("/api/cron/")
+    ) {
         return NextResponse.next();
     }
 

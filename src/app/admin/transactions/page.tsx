@@ -25,7 +25,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import {
     IconLoader2,
     IconSearch,
@@ -34,6 +34,8 @@ import {
     IconArrowsExchange,
     IconReceipt2,
     IconX,
+    IconShoppingCart,
+    IconCrown,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 
@@ -53,7 +55,23 @@ type Stats = {
     netAdjustments: number;
     walletFloat: number;
     transactionsCount: number;
+    ordersCount: number;
+    averageOrderValue: number;
     daily: { date: string; ca: number; deposits: number }[];
+    weeklyOrders: { weekStart: string; count: number; revenue: number }[];
+    revenueByNetwork: { network: string; revenue: number; count: number }[];
+    topServices: {
+        network: string;
+        serviceName: string;
+        revenue: number;
+        count: number;
+    }[];
+    topSpenders: {
+        userId: string;
+        name: string | null;
+        email: string;
+        totalSpent: number;
+    }[];
 };
 
 function fcfa(n: number) {
@@ -79,6 +97,18 @@ const chartConfig = {
     ca: { label: "Chiffre d'affaires", color: "var(--primary)" },
     deposits: { label: "Rechargements", color: "var(--info)" },
 } satisfies ChartConfig;
+
+const weeklyChartConfig = {
+    count: { label: "Commandes", color: "var(--primary)" },
+} satisfies ChartConfig;
+
+const NETWORK_COLORS = [
+    "var(--primary)",
+    "var(--info)",
+    "var(--success)",
+    "var(--warning)",
+    "var(--destructive)",
+];
 
 export default function AdminTransactionsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -134,6 +164,17 @@ export default function AdminTransactionsPage() {
         deposits: d.deposits,
     }));
 
+    const weeklyChartData = stats?.weeklyOrders.map((w) => ({
+        week: new Date(w.weekStart).toLocaleDateString("fr-FR", {
+            day: "2-digit",
+            month: "short",
+        }),
+        count: w.count,
+        revenue: w.revenue,
+    }));
+
+    const maxNetworkRevenue = stats?.revenueByNetwork[0]?.revenue ?? 0;
+
     if (loading && !stats) {
         return (
             <div className="flex items-center justify-center h-40">
@@ -152,7 +193,7 @@ export default function AdminTransactionsPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 <Card className="p-4">
                     <div className="flex items-start justify-between">
                         <div>
@@ -187,7 +228,7 @@ export default function AdminTransactionsPage() {
                     <div className="flex items-start justify-between">
                         <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
-                                Solde total en circulation
+                                Solde en circulation
                             </p>
                             <p className="text-2xl font-black tabular-nums">
                                 {stats ? fcfa(stats.walletFloat) : "—"}
@@ -195,6 +236,25 @@ export default function AdminTransactionsPage() {
                         </div>
                         <div className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground bg-muted">
                             <IconArrowsExchange className="w-4 h-4" />
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                                Panier moyen
+                            </p>
+                            <p className="text-2xl font-black tabular-nums">
+                                {stats ? fcfa(stats.averageOrderValue) : "—"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                {stats?.ordersCount ?? 0} commande
+                                {(stats?.ordersCount ?? 0) !== 1 ? "s" : ""}
+                            </p>
+                        </div>
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground bg-muted">
+                            <IconShoppingCart className="w-4 h-4" />
                         </div>
                     </div>
                 </Card>
@@ -275,6 +335,144 @@ export default function AdminTransactionsPage() {
                         />
                     </AreaChart>
                 </ChartContainer>
+            </Card>
+
+            {/* Commandes par semaine */}
+            <Card className="p-4">
+                <div className="mb-2">
+                    <h2 className="font-bold text-sm">
+                        Commandes par semaine — 8 dernières semaines
+                    </h2>
+                </div>
+                <ChartContainer
+                    config={weeklyChartConfig}
+                    className="h-[220px] w-full"
+                >
+                    <BarChart data={weeklyChartData}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="week"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                    </BarChart>
+                </ChartContainer>
+            </Card>
+
+            {/* CA par réseau + Top clients */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card className="p-4">
+                    <h2 className="font-bold text-sm mb-4">CA par réseau</h2>
+                    {!stats || stats.revenueByNetwork.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            Aucune commande pour le moment.
+                        </p>
+                    ) : (
+                        <div className="space-y-3">
+                            {stats.revenueByNetwork.map((n, i) => (
+                                <div key={n.network}>
+                                    <div className="flex items-center justify-between text-sm mb-1">
+                                        <span className="font-medium">{n.network}</span>
+                                        <span className="text-muted-foreground tabular-nums">
+                                            {fcfa(n.revenue)} · {n.count} commande
+                                            {n.count !== 1 ? "s" : ""}
+                                        </span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full"
+                                            style={{
+                                                width: `${maxNetworkRevenue > 0 ? (n.revenue / maxNetworkRevenue) * 100 : 0}%`,
+                                                backgroundColor:
+                                                    NETWORK_COLORS[i % NETWORK_COLORS.length],
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Card>
+
+                <Card className="p-4">
+                    <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
+                        <IconCrown className="w-4 h-4 text-warning" />
+                        Top clients
+                    </h2>
+                    {!stats || stats.topSpenders.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            Aucune commande pour le moment.
+                        </p>
+                    ) : (
+                        <div className="space-y-2">
+                            {stats.topSpenders.map((s, i) => (
+                                <div
+                                    key={s.userId}
+                                    className="flex items-center gap-3 text-sm"
+                                >
+                                    <span className="w-5 shrink-0 text-muted-foreground tabular-nums">
+                                        {i + 1}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium truncate">
+                                            {s.name ?? s.email}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground truncate">
+                                            {s.email}
+                                        </p>
+                                    </div>
+                                    <span className="font-bold text-primary tabular-nums shrink-0">
+                                        {fcfa(s.totalSpent)}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Card>
+            </div>
+
+            {/* Top services */}
+            <Card className="p-4">
+                <h2 className="font-bold text-sm mb-4">
+                    Services les plus rentables
+                </h2>
+                {!stats || stats.topServices.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                        Aucune commande pour le moment.
+                    </p>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Réseau</TableHead>
+                                <TableHead>Service</TableHead>
+                                <TableHead className="text-right">Commandes</TableHead>
+                                <TableHead className="text-right">CA généré</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {stats.topServices.map((s) => (
+                                <TableRow key={`${s.network}-${s.serviceName}`}>
+                                    <TableCell className="text-muted-foreground">
+                                        {s.network}
+                                    </TableCell>
+                                    <TableCell className="font-medium">
+                                        {s.serviceName}
+                                    </TableCell>
+                                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                                        {s.count}
+                                    </TableCell>
+                                    <TableCell className="text-right font-bold text-primary tabular-nums">
+                                        {fcfa(s.revenue)}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
             </Card>
 
             {/* Filters */}

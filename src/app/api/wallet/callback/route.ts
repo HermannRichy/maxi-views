@@ -3,6 +3,7 @@ import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { sendDepositConfirmed } from "@/lib/emails";
 import { checkFeexPayStatus } from "@/lib/feexpay";
+import { checkAndNotifyPaymentFailureSpike } from "@/lib/payment-alerts";
 
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/callback
@@ -20,6 +21,7 @@ import { checkFeexPayStatus } from "@/lib/feexpay";
 interface FeexPayWebhookPayload {
     reference?: string;
     order_id?: string;
+    callback_info?: string;
     status?: string;
     amount?: number;
 }
@@ -56,8 +58,15 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const reference = body.reference ?? body.order_id ?? null;
-        if (!reference) {
+        // "reference" (notre référence interne, ex: DEP_...) est transmise à
+        // FeexPay via callback_info à l'initiation du paiement — c'est elle
+        // qui nous permet de retrouver la Transaction en base. "reference"/
+        // "order_id" au niveau racine sont l'identifiant FeexPay lui-même,
+        // nécessaire pour revérifier le statut auprès de leur API.
+        const reference = body.callback_info ?? null;
+        const feexpayId = body.reference ?? body.order_id ?? null;
+
+        if (!reference || !feexpayId) {
             return NextResponse.json(
                 { error: "Référence manquante dans le payload" },
                 { status: 400 },
@@ -85,7 +94,7 @@ export async function POST(req: NextRequest) {
         // directement auprès de FeexPay avec notre clé secrète.
         let verifiedStatus: string;
         try {
-            const verified = await checkFeexPayStatus(reference);
+            const verified = await checkFeexPayStatus(feexpayId);
             verifiedStatus = verified.status;
         } catch (err) {
             console.error("Vérification statut FeexPay échouée:", err);
@@ -123,6 +132,8 @@ export async function POST(req: NextRequest) {
                 where: { reference },
                 data: { status: "FAILED" },
             });
+
+            checkAndNotifyPaymentFailureSpike().catch(console.error);
 
             return NextResponse.json({
                 ok: true,
