@@ -372,3 +372,47 @@ export async function sendOrderStatusChanged({
         console.error("Erreur d'envoi email de changement de statut:", error);
     }
 }
+
+/* ─── Helpers ───────────────────────────────────────────────────── */
+function escapeHtml(text: string) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+/** 5. Message libre → utilisateur ou adresse saisie, depuis le panel admin */
+export async function sendAdminMessage({
+    to,
+    subject,
+    message,
+}: {
+    to: string;
+    subject: string;
+    message: string;
+}) {
+    if (!resend) return;
+    try {
+        const bodyHtml = escapeHtml(message)
+            .split(/\n{2,}/)
+            .map((p) => `<p style="color:#3f3f46;margin:0 0 16px">${p.replace(/\n/g, "<br>")}</p>`)
+            .join("");
+
+        const { error } = await resend.emails.send({
+            from: FROM,
+            to,
+            subject,
+            html: layout(
+                subject,
+                `
+                <h2 style="color:#111;margin:0 0 16px">${escapeHtml(subject)}</h2>
+                ${bodyHtml}
+                <p style="color:#71717a;font-size:13px;margin-top:24px">Message envoyé par l'équipe Maxi Views.</p>
+            `,
+            ),
+        });
+        if (error) console.error("Erreur d'envoi email admin:", error);
+    } catch (error) {
+        console.error("Erreur d'envoi email admin:", error);
+    }
+}

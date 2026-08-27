@@ -10,6 +10,8 @@ import {
     IconShieldCheck,
     IconArrowLeft,
     IconLogout,
+    IconAdjustments,
+    IconMail,
 } from "@tabler/icons-react";
 import {
     Sidebar,
@@ -31,6 +33,8 @@ const NAV_ITEMS = [
     { href: "/admin", label: "Dashboard", Icon: IconLayoutDashboard },
     { href: "/admin/orders", label: "Commandes", Icon: IconShoppingCart },
     { href: "/admin/users", label: "Utilisateurs", Icon: IconUsers },
+    { href: "/admin/services", label: "Services", Icon: IconAdjustments },
+    { href: "/admin/emails", label: "Emails", Icon: IconMail },
 ];
 
 interface AdminSidebarProps {

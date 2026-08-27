@@ -10,7 +10,8 @@ import {
     IconBan,
     IconLoader2,
     IconDeviceFloppy,
-    IconLink,
+    IconCopy,
+    IconCheck,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -78,6 +79,48 @@ const ALL_STATUSES: OrderStatus[] = [
     "FAILED",
     "CANCELLED",
 ];
+
+function CopyButton({
+    text,
+    label,
+    className,
+}: {
+    text: string;
+    label?: string;
+    className?: string;
+}) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            toast.success(label ? `${label} copié` : "Copié dans le presse-papiers");
+            setTimeout(() => setCopied(false), 1500);
+        } catch {
+            toast.error("Impossible de copier");
+        }
+    };
+
+    return (
+        <button
+            type="button"
+            onClick={handleCopy}
+            title={label ? `Copier : ${label}` : "Copier"}
+            className={
+                className ??
+                "shrink-0 p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            }
+        >
+            {copied ? (
+                <IconCheck className="w-3.5 h-3.5 text-success" />
+            ) : (
+                <IconCopy className="w-3.5 h-3.5" />
+            )}
+        </button>
+    );
+}
 
 function OrderRow({
     order,
@@ -160,17 +203,62 @@ function OrderRow({
             {/* Expanded panel */}
             {expanded && (
                 <div className="border-t border-white/10 p-4 space-y-4 bg-muted/10">
-                    {/* Link */}
-                    <div className="flex items-center gap-2 text-sm">
-                        <IconLink className="w-4 h-4 text-muted-foreground shrink-0" />
-                        <a
-                            href={order.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline truncate text-xs"
-                        >
-                            {order.link}
-                        </a>
+                    {/* Détails à copier pour JAP */}
+                    <div className="rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
+                        <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest shrink-0">
+                                Référence
+                            </span>
+                            <span className="font-mono text-xs truncate">
+                                #{order.id.slice(-8).toUpperCase()}
+                            </span>
+                            <CopyButton
+                                text={order.id.slice(-8).toUpperCase()}
+                                label="Référence"
+                            />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest shrink-0">
+                                Réseau
+                            </span>
+                            <span className="text-xs truncate">{order.network}</span>
+                            <CopyButton text={order.network} label="Réseau" />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest shrink-0">
+                                Service
+                            </span>
+                            <span className="text-xs truncate">
+                                {order.serviceName}
+                            </span>
+                            <CopyButton text={order.serviceName} label="Service" />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest shrink-0">
+                                Lien
+                            </span>
+                            <a
+                                href={order.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline truncate text-xs"
+                            >
+                                {order.link}
+                            </a>
+                            <CopyButton text={order.link} label="Lien" />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                            <span className="text-xs text-muted-foreground uppercase tracking-widest shrink-0">
+                                Quantité
+                            </span>
+                            <span className="text-xs truncate">
+                                {order.quantity.toLocaleString("fr-FR")}
+                            </span>
+                            <CopyButton
+                                text={String(order.quantity)}
+                                label="Quantité"
+                            />
+                        </div>
                     </div>
 
                     {/* Status change */}

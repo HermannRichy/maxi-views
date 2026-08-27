@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { sendDepositConfirmed } from "@/lib/emails";
 import { checkFeexPayStatus } from "@/lib/feexpay";
@@ -6,13 +7,14 @@ import { checkFeexPayStatus } from "@/lib/feexpay";
 /* ─────────────────────────────────────────────────────────────────
    POST /api/wallet/callback
    Webhook FeexPay : crédite le solde utilisateur sur paiement réussi.
-   Cette route est PUBLIQUE (pas d'auth).
+   Cette route est PUBLIQUE (pas d'auth de session).
 
-   FeexPay ne documente aucun mécanisme de signature pour ce webhook
-   (contrairement aux payouts, protégés par liste d'IP). Par prudence,
-   on ne fait jamais confiance au statut envoyé dans le payload brut :
-   on rappelle l'API FeexPay (authentifiée par notre clé secrète) pour
-   obtenir le statut réel avant de créditer quoi que ce soit.
+   FeexPay ne documente pas de signature HMAC sur ce webhook, mais son
+   dashboard permet d'ajouter un en-tête "Authorization: Bearer <secret>"
+   personnalisé envoyé à chaque appel — c'est notre premier filtre.
+   En complément (défense en profondeur), on ne fait jamais confiance
+   au statut du payload brut : on revérifie toujours auprès de l'API
+   FeexPay avant de créditer quoi que ce soit.
 ───────────────────────────────────────────────────────────────── */
 
 interface FeexPayWebhookPayload {
@@ -22,8 +24,28 @@ interface FeexPayWebhookPayload {
     amount?: number;
 }
 
+function isAuthorized(req: NextRequest): boolean {
+    const expected = process.env.FEEXPAY_WEBHOOK_SECRET;
+    if (!expected) return true; // pas configuré : ne bloque pas (dev/preview)
+
+    const header = req.headers.get("authorization") ?? "";
+    const provided = header.replace(/^Bearer\s+/i, "");
+
+    const providedBuf = Buffer.from(provided);
+    const expectedBuf = Buffer.from(expected);
+    return (
+        providedBuf.length === expectedBuf.length &&
+        crypto.timingSafeEqual(providedBuf, expectedBuf)
+    );
+}
+
 export async function POST(req: NextRequest) {
     try {
+        if (!isAuthorized(req)) {
+            console.warn("Webhook FeexPay — en-tête Authorization invalide ou manquant");
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         let body: FeexPayWebhookPayload;
         try {
             body = (await req.json()) as FeexPayWebhookPayload;

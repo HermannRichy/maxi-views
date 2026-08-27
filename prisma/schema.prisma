@@ -128,6 +128,23 @@ model Transaction {
   @@index([userId])
 }
 
+model Service {
+  id        String   @id @default(cuid())
+  network   String
+  name      String
+  unitPrice Int      // FCFA pour 1000 unités
+  minQty    Int
+  step      Int
+  note      String?  // Info affichée au client avant commande
+  enabled   Boolean  @default(true)
+  position  Int      @default(0) // Ordre d'affichage au sein du réseau
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([network, name])
+  @@index([network])
+}
+
 model ContactMessage {
   id        String   @id @default(cuid())
   name      String

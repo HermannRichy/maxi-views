@@ -1,72 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { NETWORKS } from "@/data/landing";
 import { toast } from "sonner";
-import { IconArrowLeft, IconLoader2, IconWallet } from "@tabler/icons-react";
+import {
+    IconArrowLeft,
+    IconInfoCircle,
+    IconLoader2,
+    IconWallet,
+} from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
-/* Services par réseau (MVP simplifié) */
-const SERVICES_CATALOG: Record<
-    string,
-    { name: string; unitPrice: number; minQty: number; step: number }[]
-> = {
-    TikTok: [
-        { name: "Vues", unitPrice: 300, minQty: 10000, step: 10000 },
-        { name: "Followers", unitPrice: 7500, minQty: 1000, step: 1000 },
-        { name: "Likes", unitPrice: 500, minQty: 1000, step: 1000 },
-        { name: "Partages", unitPrice: 300, minQty: 10000, step: 10000 },
-        { name: "Vues story", unitPrice: 700, minQty: 10000, step: 10000 },
-        { name: "Enregistrements", unitPrice: 150, minQty: 10000, step: 10000 },
-        { name: "Auto-likes", unitPrice: 400, minQty: 1000, step: 1000 },
-        { name: "Commentaires", unitPrice: 3500, minQty: 50, step: 50 },
-    ],
-    Instagram: [
-        { name: "Followers", unitPrice: 7500, minQty: 1000, step: 1000 },
-        { name: "Likes", unitPrice: 4000, minQty: 1000, step: 1000 },
-        { name: "Vues", unitPrice: 500, minQty: 10000, step: 10000 },
-        { name: "Vues story", unitPrice: 150, minQty: 10000, step: 10000 },
-        { name: "Enregistrements", unitPrice: 150, minQty: 10000, step: 10000 },
-        { name: "Impressions", unitPrice: 350, minQty: 10000, step: 10000 },
-        { name: "Auto-likes", unitPrice: 450, minQty: 1000, step: 1000 },
-        { name: "Commentaires", unitPrice: 2800, minQty: 50, step: 50 },
-    ],
-    YouTube: [
-        { name: "Vues", unitPrice: 900, minQty: 10000, step: 10000 },
-        { name: "Abonnés", unitPrice: 15000, minQty: 1000, step: 1000 },
-        { name: "Likes", unitPrice: 5000, minQty: 1000, step: 1000 },
-        { name: "Partages", unitPrice: 3200, minQty: 1000, step: 1000 },
-        { name: "Commentaires", unitPrice: 6000, minQty: 50, step: 50 },
-        { name: "Watch Time (heures)", unitPrice: 18000, minQty: 500, step: 500 },
-    ],
-    Facebook: [
-        { name: "Likes page", unitPrice: 4000, minQty: 1000, step: 1000 },
-        { name: "Followers", unitPrice: 6000, minQty: 1000, step: 1000 },
-        { name: "Vues Reels", unitPrice: 250, minQty: 10000, step: 10000 },
-        { name: "Vues vidéo", unitPrice: 450, minQty: 10000, step: 10000 },
-        { name: "Membres groupe", unitPrice: 2200, minQty: 1000, step: 1000 },
-        { name: "Vues story", unitPrice: 2800, minQty: 10000, step: 10000 },
-        { name: "Commentaires", unitPrice: 60000, minQty: 10, step: 10 },
-    ],
-    Telegram: [
-        { name: "Membres", unitPrice: 12500, minQty: 1000, step: 1000 },
-        { name: "Vues", unitPrice: 500, minQty: 10000, step: 10000 },
-    ],
-    "X (Twitter)": [
-        { name: "Followers", unitPrice: 9500, minQty: 1000, step: 1000 },
-        { name: "Likes", unitPrice: 5000, minQty: 1000, step: 1000 },
-        { name: "Retweets", unitPrice: 600, minQty: 1000, step: 1000 },
-        { name: "Vues vidéo", unitPrice: 250, minQty: 10000, step: 10000 },
-        { name: "Commentaires", unitPrice: 30000, minQty: 10, step: 10 },
-    ],
-    WhatsApp: [
-        { name: "Membres canal", unitPrice: 10000, minQty: 1000, step: 1000 },
-    ],
+type Service = {
+    id: string;
+    network: string;
+    name: string;
+    unitPrice: number;
+    minQty: number;
+    step: number;
+    note: string | null;
 };
 
 const STEPS = ["Réseau", "Service", "Détails"] as const;
@@ -111,17 +69,27 @@ function StepIndicator({ step }: { step: 1 | 2 | 3 }) {
 
 export default function NewOrderPage() {
     const router = useRouter();
+    const [services, setServices] = useState<Service[]>([]);
+    const [loadingServices, setLoadingServices] = useState(true);
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
-    const [selectedService, setSelectedService] = useState<{
-        name: string;
-        unitPrice: number;
-        minQty: number;
-        step: number;
-    } | null>(null);
+    const [selectedService, setSelectedService] = useState<Service | null>(
+        null,
+    );
     const [link, setLink] = useState("");
     const [quantity, setQuantity] = useState(0);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        fetch("/api/services")
+            .then((r) => r.json())
+            .then((d) => setServices(d.services ?? []))
+            .finally(() => setLoadingServices(false));
+    }, []);
+
+    const availableNetworks = NETWORKS.filter((n) =>
+        services.some((s) => s.network === n.name),
+    );
 
     const amount = selectedService
         ? Math.ceil(selectedService.unitPrice * (quantity / 1000))
@@ -179,187 +147,219 @@ export default function NewOrderPage() {
 
             <StepIndicator step={step} />
 
-            {/* Step 1: Network */}
-            {step === 1 && (
+            {loadingServices ? (
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Choisissez un réseau</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 gap-3">
-                            {NETWORKS.map((n) => (
-                                <button
-                                    key={n.name}
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedNetwork(n.name);
-                                        setSelectedService(null);
-                                        setStep(2);
-                                    }}
-                                    className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
-                                >
-                                    <n.Icon
-                                        className="w-6 h-6 shrink-0"
-                                        style={{ color: n.iconColor }}
-                                        stroke={1.5}
-                                    />
-                                    <span className="text-sm font-medium">
-                                        {n.name}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Step 2: Service */}
-            {step === 2 && selectedNetwork && (
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setStep(1)}
-                                className="h-7 px-2 -ml-2"
-                            >
-                                <IconArrowLeft data-icon="inline-start" />
-                                Retour
-                            </Button>
-                        </div>
-                        <CardTitle>Service pour {selectedNetwork}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        {(SERVICES_CATALOG[selectedNetwork] ?? []).map((s) => (
-                            <button
-                                key={s.name}
-                                type="button"
-                                onClick={() => {
-                                    setSelectedService(s);
-                                    setQuantity(s.minQty);
-                                    setStep(3);
-                                }}
-                                className="w-full flex items-center justify-between p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
-                            >
-                                <span className="text-sm font-medium">
-                                    {s.name}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                    ≈{" "}
-                                    {Math.ceil(
-                                        s.unitPrice * (s.minQty / 1000),
-                                    ).toLocaleString("fr-FR")}{" "}
-                                    FCFA / {s.minQty.toLocaleString("fr-FR")}
-                                </span>
-                            </button>
+                    <CardContent className="p-5 space-y-3">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <Skeleton key={i} className="h-12 w-full rounded-xl" />
                         ))}
                     </CardContent>
                 </Card>
-            )}
+            ) : (
+                <>
+                    {/* Step 1: Network */}
+                    {step === 1 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Choisissez un réseau</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {availableNetworks.map((n) => (
+                                        <button
+                                            key={n.name}
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedNetwork(n.name);
+                                                setSelectedService(null);
+                                                setStep(2);
+                                            }}
+                                            className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
+                                        >
+                                            <n.Icon
+                                                className="w-6 h-6 shrink-0"
+                                                style={{ color: n.iconColor }}
+                                                stroke={1.5}
+                                            />
+                                            <span className="text-sm font-medium">
+                                                {n.name}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
-            {/* Step 3: Order details */}
-            {step === 3 && selectedService && selectedNetwork && (
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setStep(2)}
-                                className="h-7 px-2 -ml-2"
-                            >
-                                <IconArrowLeft data-icon="inline-start" />
-                                Retour
-                            </Button>
-                        </div>
-                        <CardTitle>
-                            {selectedNetwork} — {selectedService.name}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {/* Link */}
-                        <div className="space-y-1.5">
-                            <Label
-                                htmlFor="link"
-                                className="text-xs text-muted-foreground uppercase tracking-widest"
-                            >
-                                URL / Lien du compte ou du post
-                            </Label>
-                            <Input
-                                id="link"
-                                type="url"
-                                placeholder="https://tiktok.com/@moncompte"
-                                value={link}
-                                onChange={(e) => setLink(e.target.value)}
-                                required
-                            />
-                        </div>
+                    {/* Step 2: Service */}
+                    {step === 2 && selectedNetwork && (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setStep(1)}
+                                        className="h-7 px-2 -ml-2"
+                                    >
+                                        <IconArrowLeft data-icon="inline-start" />
+                                        Retour
+                                    </Button>
+                                </div>
+                                <CardTitle>
+                                    Service pour {selectedNetwork}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                {services
+                                    .filter((s) => s.network === selectedNetwork)
+                                    .map((s) => (
+                                        <button
+                                            key={s.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedService(s);
+                                                setQuantity(s.minQty);
+                                                setStep(3);
+                                            }}
+                                            className="w-full flex items-center justify-between p-3 rounded-xl border border-white/10 hover:border-primary/50 bg-muted/20 hover:bg-primary/5 transition-colors text-left"
+                                        >
+                                            <span className="text-sm font-medium">
+                                                {s.name}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                ≈{" "}
+                                                {Math.ceil(
+                                                    s.unitPrice *
+                                                        (s.minQty / 1000),
+                                                ).toLocaleString("fr-FR")}{" "}
+                                                FCFA /{" "}
+                                                {s.minQty.toLocaleString(
+                                                    "fr-FR",
+                                                )}
+                                            </span>
+                                        </button>
+                                    ))}
+                            </CardContent>
+                        </Card>
+                    )}
 
-                        {/* Quantity */}
-                        <div className="space-y-1.5">
-                            <Label
-                                htmlFor="quantity"
-                                className="text-xs text-muted-foreground uppercase tracking-widest"
-                            >
-                                Quantité (min.{" "}
-                                {selectedService.minQty.toLocaleString("fr-FR")}
-                                )
-                            </Label>
-                            <Input
-                                id="quantity"
-                                type="number"
-                                min={selectedService.minQty}
-                                step={selectedService.step}
-                                value={quantity}
-                                onChange={(e) =>
-                                    setQuantity(Number(e.target.value))
-                                }
-                            />
-                        </div>
+                    {/* Step 3: Order details */}
+                    {step === 3 && selectedService && selectedNetwork && (
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setStep(2)}
+                                        className="h-7 px-2 -ml-2"
+                                    >
+                                        <IconArrowLeft data-icon="inline-start" />
+                                        Retour
+                                    </Button>
+                                </div>
+                                <CardTitle>
+                                    {selectedNetwork} — {selectedService.name}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* Info note (admin-configured) */}
+                                {selectedService.note && (
+                                    <div className="flex items-start gap-2.5 rounded-xl bg-info/10 border border-info/20 p-3.5 text-sm text-info">
+                                        <IconInfoCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                        <p>{selectedService.note}</p>
+                                    </div>
+                                )}
 
-                        {/* Price summary */}
-                        <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">
-                                    Coût total
-                                </span>
-                                <span className="font-black text-primary tabular-nums text-lg">
-                                    {amount.toLocaleString("fr-FR")} FCFA
-                                </span>
-                            </div>
-                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                                <span>
-                                    pour {quantity.toLocaleString("fr-FR")}{" "}
-                                    {selectedService.name.toLowerCase()}
-                                </span>
-                            </div>
-                        </div>
+                                {/* Link */}
+                                <div className="space-y-1.5">
+                                    <Label
+                                        htmlFor="link"
+                                        className="text-xs text-muted-foreground uppercase tracking-widest"
+                                    >
+                                        URL / Lien du compte ou du post
+                                    </Label>
+                                    <Input
+                                        id="link"
+                                        type="url"
+                                        placeholder="https://tiktok.com/@moncompte"
+                                        value={link}
+                                        onChange={(e) => setLink(e.target.value)}
+                                        required
+                                    />
+                                </div>
 
-                        {/* Submit */}
-                        <Button
-                            onClick={handleSubmit}
-                            disabled={
-                                loading ||
-                                !link ||
-                                quantity < selectedService.minQty
-                            }
-                            className="w-full"
-                        >
-                            {loading ? (
-                                <IconLoader2
-                                    data-icon="inline-start"
-                                    className="animate-spin"
-                                />
-                            ) : (
-                                <IconWallet data-icon="inline-start" />
-                            )}
-                            {loading
-                                ? "Traitement..."
-                                : `Commander — ${amount.toLocaleString("fr-FR")} FCFA`}
-                        </Button>
-                    </CardContent>
-                </Card>
+                                {/* Quantity */}
+                                <div className="space-y-1.5">
+                                    <Label
+                                        htmlFor="quantity"
+                                        className="text-xs text-muted-foreground uppercase tracking-widest"
+                                    >
+                                        Quantité (min.{" "}
+                                        {selectedService.minQty.toLocaleString(
+                                            "fr-FR",
+                                        )}
+                                        )
+                                    </Label>
+                                    <Input
+                                        id="quantity"
+                                        type="number"
+                                        min={selectedService.minQty}
+                                        step={selectedService.step}
+                                        value={quantity}
+                                        onChange={(e) =>
+                                            setQuantity(Number(e.target.value))
+                                        }
+                                    />
+                                </div>
+
+                                {/* Price summary */}
+                                <div className="rounded-xl bg-primary/5 border border-primary/20 p-4">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">
+                                            Coût total
+                                        </span>
+                                        <span className="font-black text-primary tabular-nums text-lg">
+                                            {amount.toLocaleString("fr-FR")}{" "}
+                                            FCFA
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                        <span>
+                                            pour{" "}
+                                            {quantity.toLocaleString("fr-FR")}{" "}
+                                            {selectedService.name.toLowerCase()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Submit */}
+                                <Button
+                                    onClick={handleSubmit}
+                                    disabled={
+                                        loading ||
+                                        !link ||
+                                        quantity < selectedService.minQty
+                                    }
+                                    className="w-full"
+                                >
+                                    {loading ? (
+                                        <IconLoader2
+                                            data-icon="inline-start"
+                                            className="animate-spin"
+                                        />
+                                    ) : (
+                                        <IconWallet data-icon="inline-start" />
+                                    )}
+                                    {loading
+                                        ? "Traitement..."
+                                        : `Commander — ${amount.toLocaleString("fr-FR")} FCFA`}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
+                </>
             )}
         </div>
     );
