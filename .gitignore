@@ -53,3 +53,6 @@ next-env.d.ts
 
 # Données fournisseur internes (coûts, marges) — jamais dans le repo
 /internal/
+
+# Scripts one-off (seed, correctifs manuels ponctuels) — jamais dans le repo
+/scripts/
