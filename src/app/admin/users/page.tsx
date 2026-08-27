@@ -32,9 +32,16 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    IconDotsVertical,
     IconLoader2,
     IconShieldCheck,
     IconShieldOff,
@@ -61,12 +68,15 @@ type AdminUser = {
 
 function AdjustBalanceDialog({
     user,
+    open,
+    onOpenChange,
     onUpdated,
 }: {
     user: AdminUser;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
     onUpdated: (u: AdminUser) => void;
 }) {
-    const [open, setOpen] = useState(false);
     const [amount, setAmount] = useState("");
     const [saving, setSaving] = useState(false);
 
@@ -90,7 +100,7 @@ function AdjustBalanceDialog({
             }
             toast.success("Solde mis à jour");
             onUpdated(data.user);
-            setOpen(false);
+            onOpenChange(false);
             setAmount("");
         } catch {
             toast.error("Erreur lors de l'ajustement");
@@ -100,13 +110,7 @@ function AdjustBalanceDialog({
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                    <IconWalletOff data-icon="inline-start" />
-                    Ajuster solde
-                </Button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Ajuster le solde</DialogTitle>
@@ -147,12 +151,15 @@ function AdjustBalanceDialog({
 
 function BanUserDialog({
     user,
+    open,
+    onOpenChange,
     onUpdated,
 }: {
     user: AdminUser;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
     onUpdated: (u: AdminUser) => void;
 }) {
-    const [open, setOpen] = useState(false);
     const [reason, setReason] = useState("");
     const [saving, setSaving] = useState(false);
 
@@ -171,7 +178,7 @@ function BanUserDialog({
             }
             toast.success("Utilisateur banni");
             onUpdated(data.user);
-            setOpen(false);
+            onOpenChange(false);
             setReason("");
         } catch {
             toast.error("Erreur lors du bannissement");
@@ -181,13 +188,7 @@ function BanUserDialog({
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                    <IconBan data-icon="inline-start" />
-                    Bannir
-                </Button>
-            </DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Bannir {user.name ?? user.email}</DialogTitle>
@@ -216,15 +217,18 @@ function BanUserDialog({
     );
 }
 
-function DeleteUserButton({
+function DeleteUserDialog({
     user,
+    open,
+    onOpenChange,
     onDeleted,
 }: {
     user: AdminUser;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
     onDeleted: (id: string) => void;
 }) {
     const [deleting, setDeleting] = useState(false);
-    const hasHistory = user._count.orders > 0 || user._count.transactions > 0;
 
     const submit = async () => {
         setDeleting(true);
@@ -239,6 +243,7 @@ function DeleteUserButton({
             }
             toast.success("Utilisateur supprimé");
             onDeleted(user.id);
+            onOpenChange(false);
         } catch {
             toast.error("Erreur lors de la suppression");
         } finally {
@@ -247,22 +252,7 @@ function DeleteUserButton({
     };
 
     return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={hasHistory}
-                    title={
-                        hasHistory
-                            ? "Impossible de supprimer un compte avec des commandes ou transactions — bannissez-le à la place"
-                            : undefined
-                    }
-                >
-                    <IconTrash data-icon="inline-start" />
-                    Supprimer
-                </Button>
-            </AlertDialogTrigger>
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>
@@ -285,6 +275,166 @@ function DeleteUserButton({
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+    );
+}
+
+function UserRow({
+    user,
+    updating,
+    onToggleRole,
+    onUnban,
+    onUpdated,
+    onDeleted,
+}: {
+    user: AdminUser;
+    updating: boolean;
+    onToggleRole: (user: AdminUser) => void;
+    onUnban: (user: AdminUser) => void;
+    onUpdated: (u: AdminUser) => void;
+    onDeleted: (id: string) => void;
+}) {
+    const [balanceOpen, setBalanceOpen] = useState(false);
+    const [banOpen, setBanOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const hasHistory = user._count.orders > 0 || user._count.transactions > 0;
+
+    return (
+        <TableRow>
+            <TableCell>
+                <p className="font-medium">{user.name ?? "—"}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+            </TableCell>
+            <TableCell>
+                <div className="flex flex-wrap gap-1.5">
+                    <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
+                        {user.role === "ADMIN" ? "Admin" : "Utilisateur"}
+                    </Badge>
+                    {user.banned && (
+                        <Badge
+                            variant="destructive"
+                            title={user.banReason ?? undefined}
+                        >
+                            Banni
+                        </Badge>
+                    )}
+                </div>
+            </TableCell>
+            <TableCell>
+                {user.emailVerified ? (
+                    <IconCircleCheck className="w-4 h-4 text-success" />
+                ) : (
+                    <IconCircleX className="w-4 h-4 text-muted-foreground" />
+                )}
+            </TableCell>
+            <TableCell className="text-right font-bold text-primary tabular-nums">
+                {user.balance.toLocaleString("fr-FR")} FCFA
+            </TableCell>
+            <TableCell className="text-right text-muted-foreground">
+                {user._count.orders}
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+                {new Date(user.createdAt).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                })}
+            </TableCell>
+            <TableCell className="text-right">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={updating}>
+                            {updating ? (
+                                <IconLoader2 className="animate-spin" />
+                            ) : (
+                                <IconDotsVertical />
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                            onSelect={(e) => {
+                                e.preventDefault();
+                                setBalanceOpen(true);
+                            }}
+                        >
+                            <IconWalletOff data-icon="inline-start" />
+                            Ajuster solde
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onSelect={(e) => {
+                                e.preventDefault();
+                                onToggleRole(user);
+                            }}
+                        >
+                            {user.role === "ADMIN" ? (
+                                <IconShieldOff data-icon="inline-start" />
+                            ) : (
+                                <IconShieldCheck data-icon="inline-start" />
+                            )}
+                            {user.role === "ADMIN" ? "Retirer admin" : "Promouvoir"}
+                        </DropdownMenuItem>
+                        {user.banned ? (
+                            <DropdownMenuItem
+                                onSelect={(e) => {
+                                    e.preventDefault();
+                                    onUnban(user);
+                                }}
+                            >
+                                <IconShieldCheck data-icon="inline-start" />
+                                Débannir
+                            </DropdownMenuItem>
+                        ) : (
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onSelect={(e) => {
+                                    e.preventDefault();
+                                    setBanOpen(true);
+                                }}
+                            >
+                                <IconBan data-icon="inline-start" />
+                                Bannir
+                            </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            disabled={hasHistory}
+                            title={
+                                hasHistory
+                                    ? "Impossible de supprimer un compte avec des commandes ou transactions — bannissez-le à la place"
+                                    : undefined
+                            }
+                            onSelect={(e) => {
+                                e.preventDefault();
+                                setDeleteOpen(true);
+                            }}
+                        >
+                            <IconTrash data-icon="inline-start" />
+                            Supprimer
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <AdjustBalanceDialog
+                    user={user}
+                    open={balanceOpen}
+                    onOpenChange={setBalanceOpen}
+                    onUpdated={onUpdated}
+                />
+                <BanUserDialog
+                    user={user}
+                    open={banOpen}
+                    onOpenChange={setBanOpen}
+                    onUpdated={onUpdated}
+                />
+                <DeleteUserDialog
+                    user={user}
+                    open={deleteOpen}
+                    onOpenChange={setDeleteOpen}
+                    onDeleted={onDeleted}
+                />
+            </TableCell>
+        </TableRow>
     );
 }
 
@@ -392,111 +542,15 @@ export default function AdminUsersPage() {
                     </TableHeader>
                     <TableBody>
                         {users.map((user) => (
-                            <TableRow key={user.id}>
-                                <TableCell>
-                                    <p className="font-medium">
-                                        {user.name ?? "—"}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {user.email}
-                                    </p>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        <Badge
-                                            variant={
-                                                user.role === "ADMIN"
-                                                    ? "default"
-                                                    : "secondary"
-                                            }
-                                        >
-                                            {user.role === "ADMIN"
-                                                ? "Admin"
-                                                : "Utilisateur"}
-                                        </Badge>
-                                        {user.banned && (
-                                            <Badge
-                                                variant="destructive"
-                                                title={user.banReason ?? undefined}
-                                            >
-                                                Banni
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    {user.emailVerified ? (
-                                        <IconCircleCheck className="w-4 h-4 text-success" />
-                                    ) : (
-                                        <IconCircleX className="w-4 h-4 text-muted-foreground" />
-                                    )}
-                                </TableCell>
-                                <TableCell className="text-right font-bold text-primary tabular-nums">
-                                    {user.balance.toLocaleString("fr-FR")} FCFA
-                                </TableCell>
-                                <TableCell className="text-right text-muted-foreground">
-                                    {user._count.orders}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">
-                                    {new Date(user.createdAt).toLocaleDateString(
-                                        "fr-FR",
-                                        {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                        },
-                                    )}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
-                                        <AdjustBalanceDialog
-                                            user={user}
-                                            onUpdated={handleUpdated}
-                                        />
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => toggleRole(user)}
-                                            disabled={updatingId === user.id}
-                                        >
-                                            {updatingId === user.id ? (
-                                                <IconLoader2 data-icon="inline-start" className="animate-spin" />
-                                            ) : user.role === "ADMIN" ? (
-                                                <IconShieldOff data-icon="inline-start" />
-                                            ) : (
-                                                <IconShieldCheck data-icon="inline-start" />
-                                            )}
-                                            {user.role === "ADMIN"
-                                                ? "Retirer admin"
-                                                : "Promouvoir"}
-                                        </Button>
-                                        {user.banned ? (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => unban(user)}
-                                                disabled={updatingId === user.id}
-                                            >
-                                                {updatingId === user.id ? (
-                                                    <IconLoader2 data-icon="inline-start" className="animate-spin" />
-                                                ) : (
-                                                    <IconShieldCheck data-icon="inline-start" />
-                                                )}
-                                                Débannir
-                                            </Button>
-                                        ) : (
-                                            <BanUserDialog
-                                                user={user}
-                                                onUpdated={handleUpdated}
-                                            />
-                                        )}
-                                        <DeleteUserButton
-                                            user={user}
-                                            onDeleted={handleDeleted}
-                                        />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
+                            <UserRow
+                                key={user.id}
+                                user={user}
+                                updating={updatingId === user.id}
+                                onToggleRole={toggleRole}
+                                onUnban={unban}
+                                onUpdated={handleUpdated}
+                                onDeleted={handleDeleted}
+                            />
                         ))}
                     </TableBody>
                 </Table>
