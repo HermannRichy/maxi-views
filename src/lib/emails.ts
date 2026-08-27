@@ -373,6 +373,39 @@ export async function sendOrderStatusChanged({
     }
 }
 
+/** 4b. Palier de chiffre d'affaires atteint → admin */
+export async function sendRevenueMilestoneEmail({
+    milestone,
+    totalRevenue,
+}: {
+    milestone: number;
+    totalRevenue: number;
+}) {
+    if (!resend) return;
+    try {
+        const { error } = await resend.emails.send({
+            from: FROM,
+            to: ADMIN_EMAIL,
+            subject: `🚀 Palier de ${fcfa(milestone)} de chiffre d'affaires atteint !`,
+            html: layout(
+                "Palier de chiffre d'affaires atteint",
+                `
+                <h2 style="color:#111;margin:0 0 8px">🎉 ${fcfa(milestone)} de CA cumulé !</h2>
+                <p style="color:#3f3f46;margin:0 0 24px">Maxi Views vient de franchir ce palier de chiffre d'affaires généré par les commandes des clients.</p>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px 24px;margin-bottom:24px">
+                    <p style="margin:0;color:#15803d;font-size:14px">Chiffre d'affaires total actuel</p>
+                    <p style="margin:4px 0 0;font-size:28px;font-weight:900;color:#15803d">${fcfa(totalRevenue)}</p>
+                </div>
+                ${button(`${APP_URL}/admin/transactions`, "Voir les statistiques")}
+            `,
+            ),
+        });
+        if (error) console.error("Erreur d'envoi email palier CA:", error);
+    } catch (error) {
+        console.error("Erreur d'envoi email palier CA:", error);
+    }
+}
+
 /* ─── Helpers ───────────────────────────────────────────────────── */
 function escapeHtml(text: string) {
     return text

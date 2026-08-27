@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { requireUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sendOrderCreatedUser, sendOrderCreatedAdmin } from "@/lib/emails";
+import { checkAndNotifyRevenueMilestone } from "@/lib/revenue";
 
 /* ─────────────────────────────────────────────────────────────────
    POST /api/orders — Créer une commande
@@ -47,12 +49,14 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const orderId = crypto.randomUUID();
         const reference = `ORD_${user.id}_${Date.now()}`;
 
         // Créer la commande + débit dans une transaction atomique
         const [order] = await prisma.$transaction([
             prisma.order.create({
                 data: {
+                    id: orderId,
                     userId: user.id,
                     network,
                     serviceName,
@@ -70,6 +74,7 @@ export async function POST(req: NextRequest) {
                     type: "DEBIT",
                     status: "COMPLETED",
                     reference,
+                    orderId,
                 },
             }),
             prisma.user.update({
@@ -100,6 +105,8 @@ export async function POST(req: NextRequest) {
                 link,
             }),
         ]).catch(console.error);
+
+        checkAndNotifyRevenueMilestone().catch(console.error);
 
         return NextResponse.json({ order }, { status: 201 });
     } catch (err) {

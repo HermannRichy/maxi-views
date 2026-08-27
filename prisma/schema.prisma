@@ -153,3 +153,9 @@ model ContactMessage {
   message   String
   createdAt DateTime @default(now())
 }
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

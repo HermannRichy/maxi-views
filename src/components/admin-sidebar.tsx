@@ -12,6 +12,7 @@ import {
     IconLogout,
     IconAdjustments,
     IconMail,
+    IconReceipt2,
 } from "@tabler/icons-react";
 import {
     Sidebar,
@@ -32,6 +33,7 @@ import { SignOutConfirm } from "@/components/ui/sign-out-confirm";
 const NAV_ITEMS = [
     { href: "/admin", label: "Dashboard", Icon: IconLayoutDashboard },
     { href: "/admin/orders", label: "Commandes", Icon: IconShoppingCart },
+    { href: "/admin/transactions", label: "Transactions", Icon: IconReceipt2 },
     { href: "/admin/users", label: "Utilisateurs", Icon: IconUsers },
     { href: "/admin/services", label: "Services", Icon: IconAdjustments },
     { href: "/admin/emails", label: "Emails", Icon: IconMail },
