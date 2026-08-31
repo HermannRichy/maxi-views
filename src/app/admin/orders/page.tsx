@@ -138,6 +138,7 @@ function OrderRow({
     const st = STATUS_CONFIG[status];
 
     const save = async () => {
+        const statusChanged = status !== order.status;
         setSaving(true);
         try {
             const res = await fetch(`/api/admin/orders/${order.id}`, {
@@ -154,7 +155,13 @@ function OrderRow({
                 toast.error(data.error);
                 return;
             }
-            toast.success("Commande mise à jour");
+            if (statusChanged) {
+                toast.success(
+                    `Statut mis à jour : ${STATUS_CONFIG[status].label} — email envoyé au client`,
+                );
+            } else {
+                toast.success("Commande mise à jour");
+            }
             onUpdated(data.order);
         } catch {
             toast.error("Erreur lors de la mise à jour");

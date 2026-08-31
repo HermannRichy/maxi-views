@@ -83,8 +83,10 @@ export async function POST(req: NextRequest) {
             }),
         ]);
 
-        // Emails de notification (non bloquants)
-        Promise.all([
+        // Emails de notification — attendus explicitement : sur Vercel, une
+        // promesse lancée juste avant le retour de la réponse peut être
+        // interrompue avant même que la requête réseau ne parte.
+        await Promise.all([
             sendOrderCreatedUser({
                 to: user.email,
                 name: user.name ?? "Utilisateur",
@@ -106,7 +108,7 @@ export async function POST(req: NextRequest) {
             }),
         ]).catch(console.error);
 
-        checkAndNotifyRevenueMilestone().catch(console.error);
+        await checkAndNotifyRevenueMilestone().catch(console.error);
 
         return NextResponse.json({ order }, { status: 201 });
     } catch (err) {

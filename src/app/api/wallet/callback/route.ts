@@ -117,7 +117,9 @@ export async function POST(req: NextRequest) {
                 }),
             ]);
 
-            sendDepositConfirmed({
+            // Attendu explicitement — voir note en tête de fichier sur le
+            // gel de fonction serverless après un retour de réponse.
+            await sendDepositConfirmed({
                 to: transaction.user.email,
                 name: transaction.user.name ?? "Utilisateur",
                 amount: transaction.amount,
@@ -133,7 +135,7 @@ export async function POST(req: NextRequest) {
                 data: { status: "FAILED" },
             });
 
-            checkAndNotifyPaymentFailureSpike().catch(console.error);
+            await checkAndNotifyPaymentFailureSpike().catch(console.error);
 
             return NextResponse.json({
                 ok: true,

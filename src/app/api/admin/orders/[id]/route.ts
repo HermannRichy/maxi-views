@@ -60,9 +60,12 @@ export async function PATCH(
             include: { user: true },
         });
 
-        // Notifier le user si le statut a changé
+        // Notifier le user si le statut a changé.
+        // Attendu explicitement : sur Vercel, une promesse "fire-and-forget"
+        // lancée juste avant le retour de la réponse peut être interrompue
+        // avant que la requête réseau vers Resend ne parte réellement.
         if (status && status !== order.status) {
-            sendOrderStatusChanged({
+            await sendOrderStatusChanged({
                 to: order.user.email,
                 name: order.user.name ?? "Utilisateur",
                 orderId: order.id,
